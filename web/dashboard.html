@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - Entegra Panel</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen flex">
+
+<!-- Sidebar -->
+<aside class="w-56 bg-gray-900 border-r border-gray-800 flex flex-col fixed h-full z-10">
+  <div class="p-5 border-b border-gray-800">
+    <h1 class="text-sm font-bold text-white">Entegra Panel</h1>
+    <p id="businessName" class="text-xs text-gray-400 mt-0.5 truncate"></p>
+  </div>
+  <nav class="flex-1 p-3 space-y-0.5">
+    <button onclick="showPage('dashboard')"    id="nav-dashboard"    class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-left">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Genel Bakış
+    </button>
+    <button onclick="showPage('restaurants')" id="nav-restaurants" class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-left">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+      Restoranlar
+    </button>
+    <button onclick="showPage('orders')"      id="nav-orders"      class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-left">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      Siparişler
+    </button>
+    <button onclick="showPage('providers')"   id="nav-providers"   class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-left">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      Pazaryerleri
+    </button>
+  </nav>
+  <div class="p-3 border-t border-gray-800">
+    <button onclick="logout()" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/10 transition">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      Çıkış Yap
+    </button>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="ml-56 flex-1 p-6">
+
+  <!-- ========= DASHBOARD ========= -->
+  <div id="page-dashboard" class="page hidden">
+    <div class="mb-6">
+      <h2 class="text-lg font-semibold">Genel Bakış</h2>
+      <p class="text-xs text-gray-400 mt-0.5">Tüm restoranlarınızın özeti</p>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Restoranlar</p>
+        <p id="stat-restaurants" class="text-3xl font-bold text-white">—</p>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Aktif Entegrasyon</p>
+        <p id="stat-integrations" class="text-3xl font-bold text-indigo-400">—</p>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Bugünkü Sipariş</p>
+        <p id="stat-today" class="text-3xl font-bold text-green-400">—</p>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Toplam Sipariş</p>
+        <p id="stat-total" class="text-3xl font-bold text-yellow-400">—</p>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      <div class="col-span-2 bg-gray-900 border border-gray-800 rounded-xl p-5">
+        <p class="text-sm font-semibold mb-4">Son 7 Günün Siparişleri</p>
+        <canvas id="chartWeekly" height="100"></canvas>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+        <p class="text-sm font-semibold mb-4">Sipariş Durumları</p>
+        <canvas id="chartStatus" height="160"></canvas>
+        <div id="chartStatusLegend" class="mt-3 space-y-1"></div>
+      </div>
+    </div>
+
+    <!-- Restaurant Cards -->
+    <div class="flex items-center justify-between mb-3">
+      <p class="text-sm font-semibold text-gray-300">Restoranlar</p>
+      <button onclick="openModal('restaurantModal')" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg transition">+ Restoran Ekle</button>
+    </div>
+    <div id="dashRestaurantGrid" class="grid grid-cols-3 gap-3"></div>
+  </div>
+
+  <!-- ========= RESTORANLAR ========= -->
+  <div id="page-restaurants" class="page hidden">
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h2 class="text-lg font-semibold">Restoranlar</h2>
+        <p class="text-xs text-gray-400 mt-0.5">Restoranlarınızı buradan yönetin</p>
+      </div>
+      <button onclick="openModal('restaurantModal')" class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition">+ Restoran Ekle</button>
+    </div>
+    <div id="restaurantGrid" class="grid grid-cols-3 gap-4"></div>
+  </div>
+
+  <!-- ========= RESTORAN DETAY ========= -->
+  <div id="page-restaurant-detail" class="page hidden">
+    <div class="flex items-center gap-3 mb-6">
+      <button onclick="showPage('restaurants')" class="text-gray-400 hover:text-white transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <div class="flex items-center gap-3">
+        <h2 id="detailRestaurantName" class="text-lg font-semibold"></h2>
+        <span id="detailRestaurantStatus" class="text-xs px-2 py-0.5 rounded-full"></span>
+      </div>
+      <div class="ml-auto flex gap-2">
+        <button id="detailDeleteBtn" onclick="deleteCurrentRestaurant()" class="text-xs text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-400/50 px-3 py-1.5 rounded-lg transition">Sil</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-1 mb-5 border-b border-gray-800 pb-0">
+      <button onclick="switchDetailTab('orders')"       id="dtab-orders"       class="detail-tab px-4 py-2 text-sm font-medium border-b-2 -mb-px transition">Siparişler</button>
+      <button onclick="switchDetailTab('integrations')" id="dtab-integrations" class="detail-tab px-4 py-2 text-sm font-medium border-b-2 -mb-px transition">Entegrasyonlar</button>
+    </div>
+
+    <!-- Tab: Siparişler -->
+    <div id="dtab-orders-content">
+      <div class="flex gap-2 mb-4 flex-wrap">
+        <button onclick="filterDetailOrders('')"          class="detail-order-btn px-3 py-1.5 rounded-lg text-xs border border-gray-700 text-gray-300 hover:border-indigo-400 hover:text-indigo-400 transition">Tümü</button>
+        <button onclick="filterDetailOrders('pending')"   class="detail-order-btn px-3 py-1.5 rounded-lg text-xs border border-gray-700 text-gray-300 hover:border-yellow-400 hover:text-yellow-400 transition">Bekliyor</button>
+        <button onclick="filterDetailOrders('approved')"  class="detail-order-btn px-3 py-1.5 rounded-lg text-xs border border-gray-700 text-gray-300 hover:border-blue-400 hover:text-blue-400 transition">Onaylandı</button>
+        <button onclick="filterDetailOrders('preparing')" class="detail-order-btn px-3 py-1.5 rounded-lg text-xs border border-gray-700 text-gray-300 hover:border-indigo-400 hover:text-indigo-400 transition">Hazırlanıyor</button>
+        <button onclick="filterDetailOrders('delivered')" class="detail-order-btn px-3 py-1.5 rounded-lg text-xs border border-gray-700 text-gray-300 hover:border-green-400 hover:text-green-400 transition">Teslim</button>
+        <button onclick="filterDetailOrders('cancelled')" class="detail-order-btn px-3 py-1.5 rounded-lg text-xs border border-gray-700 text-gray-300 hover:border-red-400 hover:text-red-400 transition">İptal</button>
+      </div>
+      <div id="detailOrderList" class="space-y-3"></div>
+    </div>
+
+    <!-- Tab: Entegrasyonlar -->
+    <div id="dtab-integrations-content" class="hidden">
+      <div id="detailIntegrationGrid" class="grid grid-cols-4 gap-3"></div>
+    </div>
+  </div>
+
+  <!-- ========= SİPARİŞLER (Global) ========= -->
+  <div id="page-orders" class="page hidden">
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h2 class="text-lg font-semibold">Siparişler</h2>
+        <p class="text-xs text-gray-400 mt-0.5">Tüm pazaryeri siparişleriniz</p>
+      </div>
+      <select id="orderRestaurantFilter" onchange="applyOrderFilters()" class="inp w-48 text-sm">
+        <option value="">Tüm Restoranlar</option>
+      </select>
+    </div>
+    <div class="flex gap-2 mb-4 flex-wrap">
+      <button onclick="setOrderStatus('')"          class="px-3 py-1.5 rounded-lg text-xs border border-gray-700 text-gray-300 hover:border-indigo-400 hover:text-indigo-400 transition">Tümü</button>
+      <button onclick="setOrderStatus('pending')"   class="px-3 py-1.5 rounded-lg text-xs border border-gray-700 text-gray-300 hover:border-yellow-400 hover:text-yellow-400 transition">Bekliyor</button>
+      <button onclick="setOrderStatus('approved')"  class="px-3 py-1.5 rounded-lg text-xs border border-gray-700 text-gray-300 hover:border-blue-400 hover:text-blue-400 transition">Onaylandı</button>
+      <button onclick="setOrderStatus('preparing')" class="px-3 py-1.5 rounded-lg text-xs border border-gray-700 text-gray-300 hover:border-indigo-400 hover:text-indigo-400 transition">Hazırlanıyor</button>
+      <button onclick="setOrderStatus('delivered')" class="px-3 py-1.5 rounded-lg text-xs border border-gray-700 text-gray-300 hover:border-green-400 hover:text-green-400 transition">Teslim</button>
+      <button onclick="setOrderStatus('cancelled')" class="px-3 py-1.5 rounded-lg text-xs border border-gray-700 text-gray-300 hover:border-red-400 hover:text-red-400 transition">İptal</button>
+    </div>
+    <div id="orderList" class="space-y-3"></div>
+  </div>
+
+  <!-- ========= PAZARYERLERİ ========= -->
+  <div id="page-providers" class="page hidden">
+    <div class="mb-5">
+      <h2 class="text-lg font-semibold">Pazaryerleri</h2>
+      <p class="text-xs text-gray-400 mt-0.5">Desteklenen platformlar</p>
+    </div>
+    <div id="providerList" class="grid grid-cols-2 gap-4 max-w-xl"></div>
+  </div>
+
+  <!-- ========= GETİR YÖNETİM ========= -->
+  <div id="page-getir-manage" class="page hidden">
+    <div class="flex items-center gap-3 mb-6">
+      <button onclick="history.back();showPage('restaurant-detail')" class="text-gray-400 hover:text-white transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <div>
+        <h2 class="text-lg font-semibold">Getir Yönetimi</h2>
+        <p id="getirManageSubtitle" class="text-xs text-gray-400 mt-0.5"></p>
+      </div>
+      <a id="getirMenuLink" href="#" class="ml-auto text-xs bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg px-3 py-1.5 transition">Menüyü Görüntüle</a>
+    </div>
+
+    <!-- Grid: bilgi + durum -->
+    <div class="grid grid-cols-3 gap-4 mb-4">
+
+      <!-- Restoran Bilgisi -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-sm font-semibold">Restoran Bilgisi</p>
+          <button onclick="loadGetirInfo()" class="text-xs text-gray-400 hover:text-white transition">↻ Yenile</button>
+        </div>
+        <div id="getirInfoContent" class="space-y-1.5 text-xs text-gray-400">
+          <p class="text-gray-600">Yükleniyor...</p>
+        </div>
+      </div>
+
+      <!-- Restoran Durumu -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+        <p class="text-sm font-semibold mb-4">Restoran Durumu</p>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-gray-400">Durum</span>
+            <button id="getirStatusToggle" onclick="toggleGetirStatus()" class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 bg-gray-600" role="switch">
+              <span class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform duration-200 translate-x-0"></span>
+            </button>
+          </div>
+          <div id="getirTimeOffRow" class="hidden">
+            <label class="text-xs text-gray-500 mb-1 block">Kapatma süresi</label>
+            <select id="getirTimeOffAmount" class="inp text-xs">
+              <option value="15">15 dakika</option>
+              <option value="30">30 dakika</option>
+              <option value="45">45 dakika</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- POS Durumu -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+        <p class="text-sm font-semibold mb-4">POS Durumu</p>
+        <div class="space-y-2">
+          <button onclick="setGetirPosStatus(100)" class="w-full text-xs bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20 rounded-lg px-3 py-2 transition">POS Aktif Et (100)</button>
+          <button onclick="setGetirPosStatus(200)" class="w-full text-xs bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg px-3 py-2 transition">POS Pasif Et (200)</button>
+        </div>
+        <p class="text-xs text-gray-600 mt-3">Getir sistemiyle bağlantı için POS aktif olmalıdır.</p>
+      </div>
+    </div>
+
+    <!-- Grid: yoğunluk + kurye -->
+    <div class="grid grid-cols-2 gap-4 mb-4">
+
+      <!-- Yoğunluk -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+        <p class="text-sm font-semibold mb-4">Yoğunluk</p>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-gray-400">Yoğun modu</span>
+            <button id="getirBusyToggle" onclick="toggleGetirBusy()" class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 bg-gray-600" role="switch">
+              <span class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform duration-200 translate-x-0"></span>
+            </button>
+          </div>
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">Ek süre (aktif olduğunda)</label>
+            <select id="getirBusyDuration" class="inp text-xs">
+              <option value="15">15 dakika</option>
+              <option value="30">30 dakika</option>
+              <option value="45">45 dakika</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kurye -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+        <p class="text-sm font-semibold mb-4">Kurye Servisi</p>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-gray-400">Kurye aktif</span>
+            <button id="getirCourierToggle" onclick="toggleGetirCourier()" class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 bg-gray-600" role="switch">
+              <span class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform duration-200 translate-x-0"></span>
+            </button>
+          </div>
+          <div id="getirCourierTimeOffRow">
+            <label class="text-xs text-gray-500 mb-1 block">Kapatma süresi</label>
+            <select id="getirCourierTimeOff" class="inp text-xs">
+              <option value="15">15 dakika</option>
+              <option value="30">30 dakika</option>
+              <option value="45">45 dakika</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Çalışma Saatleri -->
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+      <div class="flex items-center justify-between mb-4">
+        <p class="text-sm font-semibold">Çalışma Saatleri</p>
+        <button onclick="saveGetirWorkingHours()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg transition">Kaydet</button>
+      </div>
+      <div id="getirWorkingHoursGrid" class="space-y-2">
+        <p class="text-xs text-gray-600">Yükleniyor...</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Toast Container -->
+<div id="toastContainer" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+<!-- ===== MODAL: Restoran Ekle ===== -->
+<div id="restaurantModal" class="modal-overlay hidden">
+  <div class="modal-box w-full max-w-md">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-semibold">Restoran Ekle</h3>
+      <button onclick="closeModal('restaurantModal')" class="text-gray-500 hover:text-white text-xl leading-none">&times;</button>
+    </div>
+    <div id="rError" class="hidden err-box mb-3"></div>
+    <form id="restaurantForm" class="space-y-3">
+      <div>
+        <label class="lbl">Restoran Adı</label>
+        <input id="rName" type="text" required placeholder="Restoran Adı" class="inp">
+      </div>
+      <div>
+        <label class="lbl">Slug <span class="text-gray-600 text-xs">(url dostu, benzersiz)</span></label>
+        <input id="rSlug" type="text" required placeholder="restoran-adi" class="inp">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="lbl">Telefon</label>
+          <input id="rPhone" type="text" placeholder="05001234567" class="inp">
+        </div>
+        <div>
+          <label class="lbl">Durum</label>
+          <select id="rStatus" class="inp">
+            <option value="active">Aktif</option>
+            <option value="passive">Pasif</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="lbl">Adres</label>
+        <input id="rAddress" type="text" placeholder="Restoran adresi" class="inp">
+      </div>
+      <div>
+        <label class="lbl">Webhook URL <span class="text-gray-600 text-xs">(sipariş gelince POST atılır)</span></label>
+        <input id="rWebhook" type="text" placeholder="https://pos.example.com/webhook" class="inp">
+      </div>
+      <div class="flex gap-3 pt-1">
+        <button type="button" onclick="closeModal('restaurantModal')" class="btn-sec flex-1">İptal</button>
+        <button type="submit" class="btn-pri flex-1">Kaydet</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODAL: Entegrasyon Ekle/Düzenle ===== -->
+<div id="integrationModal" class="modal-overlay hidden">
+  <div class="modal-box w-full max-w-lg">
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h3 class="font-semibold" id="intModalTitle">Entegrasyon</h3>
+        <p class="text-xs text-gray-400 mt-0.5" id="intModalSub"></p>
+      </div>
+      <button onclick="closeModal('integrationModal')" class="text-gray-500 hover:text-white text-xl leading-none">&times;</button>
+    </div>
+    <div id="intError" class="hidden err-box mb-4"></div>
+    <form id="integrationForm" class="space-y-4">
+
+      <div id="getirFields" class="hidden space-y-4">
+        <div class="section-box">
+          <p class="section-title">API Bilgileri</p>
+          <div class="space-y-3">
+            <div>
+              <label class="lbl">App Secret Key <span class="text-gray-600 normal-case">(40 karakter)</span></label>
+              <input id="getirRestaurantId" type="text" placeholder="appSecretKey — 40 karakter" class="inp">
+            </div>
+            <div>
+              <label class="lbl">Restaurant Secret Key</label>
+              <input id="getirSecretKey" type="text" placeholder="restaurantSecretKey" class="inp">
+            </div>
+          </div>
+        </div>
+        <div class="section-box">
+          <p class="section-title">Entegrasyon Ayarları</p>
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label class="lbl">Durum</label>
+              <select id="intStatus" class="inp">
+                <option value="1">Aktif</option>
+                <option value="0">Pasif</option>
+              </select>
+            </div>
+            <div>
+              <label class="lbl">Otomatik Onay</label>
+              <select id="intAutoApprove" class="inp">
+                <option value="0">Hayır</option>
+                <option value="1">Evet</option>
+              </select>
+            </div>
+            <div>
+              <label class="lbl">Servis Kodu</label>
+              <input id="intService" type="text" value="15" class="inp">
+            </div>
+          </div>
+        </div>
+        <div class="section-box">
+          <p class="section-title">Teslimat Etiketleri</p>
+          <div class="space-y-2">
+            <div>
+              <label class="lbl">Zil Çalma</label>
+              <input id="intDoNotKnock" type="text" value="Zil Çalma" class="inp">
+            </div>
+            <div>
+              <label class="lbl">Temassız Teslimat</label>
+              <input id="intDropOffAtDoor" type="text" value="Temassız Teslimat" class="inp">
+            </div>
+            <div>
+              <label class="lbl">Ekolojik</label>
+              <input id="intIsEcoFriendly" type="text" value="Servis" class="inp">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="trendyolFields" class="hidden space-y-4">
+        <div class="section-box">
+          <p class="section-title">API Bilgileri</p>
+          <div class="space-y-3">
+            <div>
+              <label class="lbl">Supplier ID</label>
+              <input id="trendyolSupplierId" type="text" placeholder="Supplier ID" class="inp">
+            </div>
+            <div>
+              <label class="lbl">Store ID</label>
+              <input id="trendyolStoreId" type="text" placeholder="Store ID" class="inp">
+            </div>
+            <div>
+              <label class="lbl">API Key</label>
+              <input id="trendyolApiKey" type="text" placeholder="API Key" class="inp">
+            </div>
+            <div>
+              <label class="lbl">API Secret Key</label>
+              <input id="trendyolApiSecretKey" type="text" placeholder="API Secret Key" class="inp">
+            </div>
+          </div>
+        </div>
+        <div class="section-box">
+          <p class="section-title">Entegrasyon Ayarları</p>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="lbl">Durum</label>
+              <select id="trendyolStatus" class="inp">
+                <option value="1">Aktif</option>
+                <option value="0">Pasif</option>
+              </select>
+            </div>
+            <div>
+              <label class="lbl">Otomatik Onay</label>
+              <select id="trendyolAutoApprove" class="inp">
+                <option value="0">Hayır</option>
+                <option value="1">Evet</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="migrosFields" class="hidden space-y-4">
+        <div class="section-box">
+          <p class="section-title">API Bilgileri</p>
+          <div class="space-y-3">
+            <div>
+              <label class="lbl">API Key</label>
+              <input id="migrosApiKey" type="text" placeholder="Migros API Key" class="inp">
+            </div>
+            <div>
+              <label class="lbl">Store ID</label>
+              <input id="migrosStoreId" type="text" placeholder="23000000100000" class="inp">
+            </div>
+            <div>
+              <label class="lbl">Store Group ID</label>
+              <input id="migrosStoreGroupId" type="text" placeholder="80" class="inp">
+            </div>
+          </div>
+        </div>
+        <div class="section-box">
+          <p class="section-title">Entegrasyon Ayarları</p>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="lbl">Durum</label>
+              <select id="migrosStatus" class="inp">
+                <option value="1">Aktif</option>
+                <option value="0">Pasif</option>
+              </select>
+            </div>
+            <div>
+              <label class="lbl">Ortam</label>
+              <select id="migrosEnv" class="inp">
+                <option value="test">Test</option>
+                <option value="prod">Prod</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="otherProviderFields" class="hidden">
+        <div class="section-box text-center py-4">
+          <p class="text-gray-400 text-sm">Bu pazaryeri için entegrasyon yakında eklenecek.</p>
+        </div>
+      </div>
+
+      <div class="flex gap-3 pt-1" id="intFormActions">
+        <button type="button" onclick="closeModal('integrationModal')" class="btn-sec flex-1">İptal</button>
+        <button type="submit" class="btn-pri flex-1" id="intSubmitBtn">Kaydet</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+  .nav-btn { color:#9ca3af; transition:all .15s; }
+  .nav-btn:hover { background:rgba(99,102,241,.1); color:#a5b4fc; }
+  .nav-btn.active { background:rgba(99,102,241,.15); color:#818cf8; }
+  .page { display:none; }
+  .page.active { display:block; }
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); display:flex; align-items:center; justify-content:center; z-index:50; padding:1rem; }
+  .modal-overlay.hidden { display:none; }
+  .modal-box { background:#111827; border:1px solid #1f2937; border-radius:1rem; padding:1.5rem; max-height:90vh; overflow-y:auto; }
+  .inp { width:100%; background:#1f2937; border:1px solid #374151; color:#fff; border-radius:.5rem; padding:.45rem .75rem; font-size:.8125rem; outline:none; transition:border-color .15s; }
+  .inp:focus { border-color:#6366f1; }
+  .lbl { display:block; font-size:.7rem; color:#9ca3af; margin-bottom:.3rem; font-weight:500; text-transform:uppercase; letter-spacing:.03em; }
+  .btn-pri { background:#4f46e5; color:#fff; border-radius:.5rem; padding:.5rem 1rem; font-size:.875rem; font-weight:500; transition:background .15s; border:none; cursor:pointer; }
+  .btn-pri:hover { background:#4338ca; }
+  .btn-sec { background:#1f2937; color:#d1d5db; border-radius:.5rem; padding:.5rem 1rem; font-size:.875rem; font-weight:500; transition:background .15s; border:1px solid #374151; cursor:pointer; }
+  .btn-sec:hover { background:#374151; }
+  .section-box { background:#1f2937; border:1px solid #374151; border-radius:.75rem; padding:1rem; }
+  .section-title { font-size:.7rem; font-weight:600; color:#6366f1; text-transform:uppercase; letter-spacing:.05em; margin-bottom:.75rem; }
+  .err-box { background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3); color:#f87171; border-radius:.5rem; padding:.6rem .75rem; font-size:.8125rem; }
+  select.inp option { background:#1f2937; }
+  .detail-tab { color:#6b7280; border-color:transparent; }
+  .detail-tab:hover { color:#d1d5db; }
+  .detail-tab.active { color:#818cf8; border-color:#6366f1; }
+  .provider-card { background:#1f2937; border:1px solid #374151; border-radius:.75rem; padding:.875rem; display:flex; flex-direction:column; }
+  .provider-card.disconnected { opacity:.6; }
+</style>
+
+<script>
+const token = localStorage.getItem('token');
+
+// ============ TOAST ============
+function toast(message, type = 'error') {
+  const colors = {
+    error:   'bg-red-500/15 border-red-500/40 text-red-300',
+    success: 'bg-green-500/15 border-green-500/40 text-green-300',
+    info:    'bg-indigo-500/15 border-indigo-500/40 text-indigo-300',
+  };
+  const icons = { error: '✕', success: '✓', info: 'ℹ' };
+  const el = document.createElement('div');
+  el.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border backdrop-blur-sm text-sm font-medium shadow-lg max-w-sm transition-all duration-300 translate-y-2 opacity-0 ${colors[type]||colors.error}`;
+  el.innerHTML = `<span class="shrink-0 w-5 h-5 flex items-center justify-center rounded-full text-xs ${type==='error'?'bg-red-500/30':type==='success'?'bg-green-500/30':'bg-indigo-500/30'}">${icons[type]||'!'}</span><span>${message}</span>`;
+  document.getElementById('toastContainer').appendChild(el);
+  requestAnimationFrame(() => { el.classList.remove('translate-y-2','opacity-0'); });
+  setTimeout(() => {
+    el.classList.add('translate-y-2','opacity-0');
+    setTimeout(() => el.remove(), 300);
+  }, 3500);
+}
+
+function confirmToast(message) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-black/60 z-[200] flex items-center justify-center';
+    overlay.innerHTML = `
+      <div class="bg-gray-900 border border-gray-700 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+        <p class="text-sm text-gray-200 mb-5">${message}</p>
+        <div class="flex gap-3">
+          <button id="confirmNo"  class="flex-1 btn-sec">Hayır</button>
+          <button id="confirmYes" class="flex-1 bg-red-600 hover:bg-red-500 text-white rounded-lg px-4 py-2 text-sm font-medium transition">Evet, Sil</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#confirmYes').onclick = () => { overlay.remove(); resolve(true); };
+    overlay.querySelector('#confirmNo').onclick  = () => { overlay.remove(); resolve(false); };
+  });
+}
+if (!token) window.location.href = '/panel/login';
+const business = JSON.parse(localStorage.getItem('business') || '{}');
+document.getElementById('businessName').textContent = business.name || '';
+
+let allProviders = [];
+let activeRestaurantId = null;
+let activeProviderData = null;
+let editingIntegrationId = null;
+let existingInformation = {};
+let currentDetailRestaurantId = null;
+let currentDetailOrderStatus = '';
+let weeklyChart = null;
+let statusChart = null;
+
+const PROVIDER_ICONS = { getir:'🟣', yemeksepeti:'🔴', trendyol:'🟠', migros:'🟡' };
+const STATUS_COLOR   = { '1':'bg-green-500/10 text-green-400', '0':'bg-gray-700 text-gray-400' };
+const STATUS_LABEL   = { '1':'Aktif', '0':'Pasif' };
+const ORDER_SC = {pending:'bg-yellow-500/10 text-yellow-400',approved:'bg-blue-500/10 text-blue-400',preparing:'bg-indigo-500/10 text-indigo-400',ready:'bg-purple-500/10 text-purple-400',delivered:'bg-green-500/10 text-green-400',cancelled:'bg-red-500/10 text-red-400'};
+const ORDER_SL = {pending:'Bekliyor',approved:'Onaylandı',preparing:'Hazırlanıyor',ready:'Hazır',delivered:'Teslim Edildi',cancelled:'İptal'};
+
+async function api(path, opts={}) {
+  const r = await fetch(path, {
+    ...opts,
+    headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json', ...(opts.headers||{}) }
+  });
+  if (r.status===401) { logout(); return null; }
+  return r.json();
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const navEl = document.getElementById('nav-'+name);
+  if (navEl) navEl.classList.add('active');
+  if (name==='dashboard')    loadDashboard();
+  if (name==='restaurants')  loadRestaurants();
+  if (name==='orders')       initOrdersPage();
+  if (name==='providers')    loadProviders();
+}
+
+function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+function logout()       { localStorage.clear(); window.location.href='/panel/login'; }
+function toSlug(v) {
+  return v.toLowerCase()
+    .replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s')
+    .replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+}
+
+// ============ DASHBOARD ============
+async function loadDashboard() {
+  if (!allProviders.length) {
+    const d = await api('/api/providers');
+    allProviders = d?.data || [];
+  }
+  const [restData, orderData] = await Promise.all([
+    api('/api/restaurants'),
+    api('/api/orders')
+  ]);
+  const restaurants = restData?.data || [];
+  const orders = orderData?.data || [];
+
+  // Stat counts
+  const intData = await Promise.all(restaurants.map(r => api(`/api/restaurants/${r.id}/providers`)));
+  let activeIntCount = 0;
+  intData.forEach(d => { (d?.data||[]).forEach(rp => { if (rp.status==='1') activeIntCount++; }); });
+
+  const today = new Date().toLocaleDateString('tr-TR');
+  const todayCount = orders.filter(o => new Date(o.created_at).toLocaleDateString('tr-TR') === today).length;
+
+  document.getElementById('stat-restaurants').textContent  = restaurants.length;
+  document.getElementById('stat-integrations').textContent = activeIntCount;
+  document.getElementById('stat-today').textContent        = todayCount;
+  document.getElementById('stat-total').textContent        = orders.length;
+
+  // Charts
+  renderWeeklyChart(orders);
+  renderStatusChart(orders);
+
+  // Restaurant cards
+  const rpMap = {};
+  restaurants.forEach((r,i) => { rpMap[r.id] = intData[i]?.data || []; });
+  renderDashRestaurants(restaurants, rpMap);
+}
+
+function renderWeeklyChart(orders) {
+  const days = [];
+  const counts = [];
+  for (let i=6; i>=0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    const label = d.toLocaleDateString('tr-TR', {day:'2-digit', month:'2-digit'});
+    const dateStr = d.toLocaleDateString('tr-TR');
+    days.push(label);
+    counts.push(orders.filter(o => new Date(o.created_at).toLocaleDateString('tr-TR') === dateStr).length);
+  }
+  if (weeklyChart) weeklyChart.destroy();
+  const ctx = document.getElementById('chartWeekly').getContext('2d');
+  weeklyChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: days,
+      datasets: [{
+        label: 'Sipariş',
+        data: counts,
+        backgroundColor: 'rgba(99,102,241,.7)',
+        borderColor: 'rgba(99,102,241,1)',
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color:'rgba(255,255,255,.05)' }, ticks: { color:'#9ca3af', font:{size:11} } },
+        y: { grid: { color:'rgba(255,255,255,.05)' }, ticks: { color:'#9ca3af', font:{size:11}, stepSize:1 }, beginAtZero:true }
+      }
+    }
+  });
+}
+
+function renderStatusChart(orders) {
+  const statusKeys  = ['pending','approved','preparing','ready','delivered','cancelled'];
+  const statusNames = ['Bekliyor','Onaylandı','Hazırlanıyor','Hazır','Teslim','İptal'];
+  const colors      = ['#eab308','#3b82f6','#6366f1','#a855f7','#22c55e','#ef4444'];
+  const counts = statusKeys.map(s => orders.filter(o=>o.status===s).length);
+  const total  = counts.reduce((a,b)=>a+b,0);
+
+  if (statusChart) statusChart.destroy();
+  const ctx = document.getElementById('chartStatus').getContext('2d');
+  statusChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: statusNames,
+      datasets: [{ data: counts, backgroundColor: colors, borderWidth: 0, hoverOffset: 4 }]
+    },
+    options: {
+      responsive: true,
+      cutout: '65%',
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ${c.label}: ${c.parsed}` } } }
+    }
+  });
+
+  document.getElementById('chartStatusLegend').innerHTML = statusKeys.map((s,i) => `
+    <div class="flex items-center justify-between text-xs">
+      <span class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full inline-block" style="background:${colors[i]}"></span>
+        <span class="text-gray-400">${statusNames[i]}</span>
+      </span>
+      <span class="text-white font-medium">${counts[i]}</span>
+    </div>
+  `).join('');
+}
+
+function renderDashRestaurants(restaurants, rpMap) {
+  const el = document.getElementById('dashRestaurantGrid');
+  if (!restaurants.length) {
+    el.innerHTML = `<div class="col-span-3 bg-gray-900 border border-dashed border-gray-700 rounded-xl p-8 text-center text-gray-500 text-sm">Henüz restoran eklenmemiş.</div>`;
+    return;
+  }
+  el.innerHTML = restaurants.map(r => {
+    const rps = rpMap[r.id] || [];
+    const connected = rps.filter(rp => rp.status==='1').length;
+    return `
+      <div onclick="openRestaurantDetail(${r.id})" class="bg-gray-900 border border-gray-800 hover:border-indigo-500/50 rounded-xl p-4 cursor-pointer transition group">
+        <div class="flex items-start justify-between mb-3">
+          <h3 class="font-semibold text-sm group-hover:text-indigo-300 transition">${r.name}</h3>
+          <span class="text-xs px-2 py-0.5 rounded-full ${r.status==='active'?'bg-green-500/10 text-green-400':'bg-gray-700 text-gray-400'}">${r.status==='active'?'Aktif':'Pasif'}</span>
+        </div>
+        <p class="text-xs text-gray-500 font-mono mb-3">${r.slug}</p>
+        <div class="flex items-center gap-3">
+          <div class="flex -space-x-1">
+            ${rps.map(rp => {
+              const p = allProviders.find(p=>p.id===rp.provider_id);
+              return p ? `<span title="${p.name}" class="text-sm">${PROVIDER_ICONS[p.slug]||'🏪'}</span>` : '';
+            }).join('')}
+          </div>
+          <span class="text-xs text-gray-500">${connected} aktif entegrasyon</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ============ RESTAURANTS PAGE ============
+async function loadRestaurants() {
+  if (!allProviders.length) {
+    const d = await api('/api/providers');
+    allProviders = d?.data || [];
+  }
+  const data = await api('/api/restaurants');
+  const restaurants = data?.data || [];
+  const el = document.getElementById('restaurantGrid');
+
+  if (!restaurants.length) {
+    el.innerHTML = `<div class="col-span-3 bg-gray-900 border border-dashed border-gray-700 rounded-xl p-10 text-center text-gray-500 text-sm">Henüz restoran eklenmemiş.</div>`;
+    return;
+  }
+
+  const intData = await Promise.all(restaurants.map(r => api(`/api/restaurants/${r.id}/providers`)));
+
+  el.innerHTML = restaurants.map((r,i) => {
+    const rps = intData[i]?.data || [];
+    const connected = rps.filter(rp=>rp.status==='1').length;
+    return `
+      <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+        <div onclick="openRestaurantDetail(${r.id})" class="p-4 cursor-pointer hover:bg-gray-800/50 transition">
+          <div class="flex items-start justify-between mb-2">
+            <h3 class="font-semibold text-sm">${r.name}</h3>
+            <span class="text-xs px-2 py-0.5 rounded-full ${r.status==='active'?'bg-green-500/10 text-green-400':'bg-gray-700 text-gray-400'}">${r.status==='active'?'Aktif':'Pasif'}</span>
+          </div>
+          <p class="text-xs font-mono text-gray-500 mb-2">${r.slug}</p>
+          <div class="flex flex-wrap gap-3 text-xs text-gray-400">
+            ${r.phone?`<span>📞 ${r.phone}</span>`:''}
+            ${r.address?`<span>📍 ${r.address}</span>`:''}
+          </div>
+        </div>
+        <div class="border-t border-gray-800 px-4 py-2.5 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="flex -space-x-1">
+              ${rps.map(rp => {
+                const p = allProviders.find(p=>p.id===rp.provider_id);
+                return p ? `<span title="${p.name}" class="text-sm">${PROVIDER_ICONS[p.slug]||'🏪'}</span>` : '';
+              }).join('')}
+            </div>
+            <span class="text-xs text-gray-500">${connected} aktif</span>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="openRestaurantDetail(${r.id})" class="text-xs text-indigo-400 hover:text-indigo-300 transition">Detay</button>
+            <button onclick="deleteRestaurant(${r.id},event)" class="text-xs text-red-400 hover:text-red-300 transition">Sil</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function deleteRestaurant(id, e) {
+  if (e) e.stopPropagation();
+  if (!await confirmToast('Bu restoranı silmek istiyor musunuz?')) return;
+  await api('/api/restaurants/'+id, {method:'DELETE'});
+  toast('Restoran silindi', 'success');
+  loadRestaurants();
+}
+
+// ============ RESTAURANT DETAIL ============
+async function openRestaurantDetail(restaurantId) {
+  currentDetailRestaurantId = restaurantId;
+  currentDetailOrderStatus = '';
+
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-restaurant-detail').classList.add('active');
+  document.getElementById('nav-restaurants').classList.add('active');
+
+  const data = await api(`/api/restaurants/${restaurantId}`);
+  const r = data?.data;
+  if (!r) return;
+
+  document.getElementById('detailRestaurantName').textContent = r.name;
+  const statusEl = document.getElementById('detailRestaurantStatus');
+  statusEl.textContent = r.status==='active' ? 'Aktif' : 'Pasif';
+  statusEl.className = `text-xs px-2 py-0.5 rounded-full ${r.status==='active'?'bg-green-500/10 text-green-400':'bg-gray-700 text-gray-400'}`;
+  document.getElementById('detailDeleteBtn').dataset.id = restaurantId;
+
+  switchDetailTab('orders');
+  loadDetailIntegrations(restaurantId);
+}
+
+async function deleteCurrentRestaurant() {
+  const id = document.getElementById('detailDeleteBtn').dataset.id;
+  if (!id) return;
+  if (!await confirmToast('Bu restoranı silmek istiyor musunuz?')) return;
+  await api('/api/restaurants/'+id, {method:'DELETE'});
+  toast('Restoran silindi', 'success');
+  showPage('restaurants');
+}
+
+function switchDetailTab(tab) {
+  ['orders','integrations'].forEach(t => {
+    document.getElementById('dtab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('dtab-'+t+'-content').classList.toggle('hidden', t!==tab);
+  });
+  if (tab==='orders') loadDetailOrders(currentDetailOrderStatus);
+}
+
+function filterDetailOrders(s) {
+  currentDetailOrderStatus = s;
+  loadDetailOrders(s);
+}
+
+async function loadDetailOrders(status) {
+  const url = `/api/restaurants/${currentDetailRestaurantId}/orders` + (status ? '?status='+status : '');
+  const data = await api(url);
+  const orders = data?.data || [];
+  const el = document.getElementById('detailOrderList');
+  if (!orders.length) {
+    el.innerHTML = '<div class="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center text-gray-500 text-sm">Sipariş bulunamadı.</div>';
+    return;
+  }
+  el.innerHTML = orders.map(o=>`
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold">#${o.id}</span>
+            <span class="text-xs text-gray-500">${o.restaurant_provider?.provider?.name||''}</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-0.5">${new Date(o.created_at).toLocaleString('tr-TR')}</p>
+          ${o.customer_name?`<p class="text-sm text-gray-300 mt-1">👤 ${o.customer_name}${o.customer_phone?' · '+o.customer_phone:''}</p>`:''}
+          ${o.total_amount?`<p class="text-sm font-semibold mt-0.5">₺${o.total_amount.toFixed(2)}</p>`:''}
+          ${o.webhook_sent?'<p class="text-xs text-green-500 mt-1">✓ Webhook gönderildi</p>':''}
+        </div>
+        <span class="text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${ORDER_SC[o.status]||'bg-gray-700 text-gray-400'}">${ORDER_SL[o.status]||o.status}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadDetailIntegrations(restaurantId) {
+  if (!allProviders.length) {
+    const d = await api('/api/providers');
+    allProviders = d?.data || [];
+  }
+  const data = await api(`/api/restaurants/${restaurantId}/providers`);
+  const rps = data?.data || [];
+  const rpMap = {};
+  rps.forEach(rp => { rpMap[rp.provider_id] = rp; });
+
+  const el = document.getElementById('detailIntegrationGrid');
+  el.innerHTML = allProviders.map(p => {
+    const rp = rpMap[p.id];
+    if (rp) {
+      return `
+        <div class="provider-card">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xl">${PROVIDER_ICONS[p.slug]||'🏪'}</span>
+            <div>
+              <p class="text-xs font-semibold">${p.name}</p>
+              <span class="text-xs px-1.5 py-0.5 rounded-full ${STATUS_COLOR[rp.status]||'bg-gray-700 text-gray-400'}">${STATUS_LABEL[rp.status]||rp.status}</span>
+              ${rp.auto_approve==='1'?'<span class="text-xs ml-1 px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400">Oto</span>':''}
+            </div>
+          </div>
+          <div class="mt-auto flex flex-col gap-1.5">
+            ${(p.slug==='getir'||p.slug==='trendyol'||p.slug==='migros')?`
+            <div class="flex items-center justify-between bg-gray-800/60 rounded-lg px-3 py-2">
+              <span id="store-label-${rp.id}" class="text-xs font-medium ${storeOpenState[rp.id]===true?'text-green-400':storeOpenState[rp.id]===false?'text-orange-400':'text-gray-400'}">
+                ${storeOpenState[rp.id]===true?'Açık':storeOpenState[rp.id]===false?'Kapalı':'Bilinmiyor'}
+              </span>
+              <button id="store-switch-${rp.id}" onclick="toggleStoreStatus('${p.slug}',${rp.id},this)"
+                class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ${storeOpenState[rp.id]===true?'bg-green-500':'bg-gray-600'}"
+                role="switch" aria-checked="${storeOpenState[rp.id]===true}">
+                <span class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform duration-200 ${storeOpenState[rp.id]===true?'translate-x-4':'translate-x-0'}"></span>
+              </button>
+            </div>
+            <a href="/panel/menu?id=${rp.id}&provider=${p.slug}&name=${encodeURIComponent(document.getElementById('detailRestaurantName').textContent)}"
+              class="text-center text-xs bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg px-2 py-1.5 transition">Menüyü Görüntüle</a>
+            ${p.slug==='getir'?`<button onclick="openGetirManage(${rp.id},'${encodeURIComponent(document.getElementById('detailRestaurantName').textContent)}')"
+              class="text-xs bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/20 rounded-lg px-2 py-1.5 transition">Getir Yönetimi</button>`:''}
+            `:''}
+            <button onclick="openEditIntegration(${restaurantId},'${p.slug}',${p.id},'${p.name}',${rp.id})"
+              class="text-xs bg-gray-700/50 hover:bg-gray-700 text-gray-300 rounded-lg px-2 py-1.5 transition">Düzenle</button>
+            <button onclick="deleteIntegration(${restaurantId},${rp.id})"
+              class="text-xs bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg px-2 py-1.5 transition">Sil</button>
+          </div>
+        </div>`;
+    } else {
+      return `
+        <div class="provider-card disconnected">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xl opacity-50">${PROVIDER_ICONS[p.slug]||'🏪'}</span>
+            <div>
+              <p class="text-xs font-medium text-gray-400">${p.name}</p>
+              <span class="text-xs text-gray-600">Bağlı değil</span>
+            </div>
+          </div>
+          <div class="mt-auto">
+            <button onclick="openAddIntegration(${restaurantId},'${p.slug}',${p.id},'${p.name}')"
+              class="w-full text-xs bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 border border-indigo-600/30 rounded-lg px-2 py-1.5 transition">Bağla</button>
+          </div>
+        </div>`;
+    }
+  }).join('');
+}
+
+// ============ PROVIDERS ============
+async function loadProviders() {
+  const data = await api('/api/providers');
+  allProviders = data?.data || [];
+  const el = document.getElementById('providerList');
+  el.innerHTML = allProviders.map(p=>`
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="text-3xl">${PROVIDER_ICONS[p.slug]||'🏪'}</span>
+        <div>
+          <p class="font-medium">${p.name}</p>
+          <span class="text-xs text-gray-500">/${p.slug}</span>
+        </div>
+      </div>
+      <p class="text-xs text-gray-500">Webhook endpoint:</p>
+      <p class="text-xs font-mono text-indigo-400 mt-0.5">POST /webhook/${p.slug}/<em>restoran-slug</em></p>
+    </div>
+  `).join('');
+}
+
+// ============ INTEGRATIONS ============
+function setProviderFields(slug) {
+  const supported = ['getir','trendyol','migros'];
+  document.getElementById('getirFields').classList.toggle('hidden', slug!=='getir');
+  document.getElementById('trendyolFields').classList.toggle('hidden', slug!=='trendyol');
+  document.getElementById('migrosFields').classList.toggle('hidden', slug!=='migros');
+  document.getElementById('otherProviderFields').classList.toggle('hidden', supported.includes(slug));
+  document.getElementById('intFormActions').classList.toggle('hidden', !supported.includes(slug));
+}
+
+function openAddIntegration(restaurantId, providerSlug, providerId, providerName) {
+  activeRestaurantId = restaurantId;
+  activeProviderData = { id: providerId, slug: providerSlug, name: providerName };
+  editingIntegrationId = null;
+  existingInformation = {};
+
+  document.getElementById('intModalTitle').textContent = providerName + ' Entegrasyonu Ekle';
+  document.getElementById('intModalSub').textContent = 'Restoran #' + restaurantId;
+  document.getElementById('integrationForm').reset();
+  document.getElementById('intError').classList.add('hidden');
+  document.getElementById('intService').value = '15';
+  document.getElementById('intDoNotKnock').value = 'Zil Çalma';
+  document.getElementById('intDropOffAtDoor').value = 'Temassız Teslimat';
+  document.getElementById('intIsEcoFriendly').value = 'Servis';
+
+  setProviderFields(providerSlug);
+  openModal('integrationModal');
+}
+
+async function openEditIntegration(restaurantId, providerSlug, providerId, providerName, integrationId) {
+  activeRestaurantId = restaurantId;
+  activeProviderData = { id: providerId, slug: providerSlug, name: providerName };
+  editingIntegrationId = integrationId;
+
+  document.getElementById('intModalTitle').textContent = providerName + ' Entegrasyonunu Düzenle';
+  document.getElementById('intModalSub').textContent = 'Restoran #' + restaurantId;
+  document.getElementById('intError').classList.add('hidden');
+
+  const data = await api(`/api/restaurants/${restaurantId}/providers/${integrationId}`);
+  const rp = data?.data;
+  if (!rp) return;
+
+  existingInformation = rp.information || {};
+
+  if (providerSlug === 'getir') {
+    document.getElementById('getirRestaurantId').value = rp.information?.restaurantId || '';
+    document.getElementById('getirSecretKey').value    = rp.information?.secretKey || '';
+    document.getElementById('intStatus').value         = rp.status || '1';
+    document.getElementById('intAutoApprove').value    = rp.auto_approve || '0';
+    document.getElementById('intService').value        = rp.service || '15';
+    document.getElementById('intDoNotKnock').value     = rp.do_not_knock || 'Zil Çalma';
+    document.getElementById('intDropOffAtDoor').value  = rp.drop_off_at_door || 'Temassız Teslimat';
+    document.getElementById('intIsEcoFriendly').value  = rp.is_eco_friendly || 'Servis';
+  }
+  if (providerSlug === 'trendyol') {
+    document.getElementById('trendyolSupplierId').value    = rp.information?.supplierId || '';
+    document.getElementById('trendyolStoreId').value       = rp.information?.storeId || rp.information?.restaurantId || '';
+    document.getElementById('trendyolApiKey').value        = rp.information?.apiKey || '';
+    document.getElementById('trendyolApiSecretKey').value  = rp.information?.apiSecretKey || '';
+    document.getElementById('trendyolStatus').value        = rp.status || '1';
+    document.getElementById('trendyolAutoApprove').value   = rp.auto_approve || '0';
+  }
+  if (providerSlug === 'migros') {
+    document.getElementById('migrosApiKey').value      = rp.information?.apiKey || '';
+    document.getElementById('migrosStoreId').value     = rp.information?.storeId || '';
+    document.getElementById('migrosStoreGroupId').value= rp.information?.storeGroupId || '';
+    document.getElementById('migrosStatus').value      = rp.status || '1';
+    document.getElementById('migrosEnv').value         = rp.information?.env || 'test';
+  }
+
+  setProviderFields(providerSlug);
+  openModal('integrationModal');
+}
+
+document.getElementById('integrationForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('intSubmitBtn');
+  btn.disabled=true; btn.textContent='Kaydediliyor...';
+  const errEl = document.getElementById('intError');
+  errEl.classList.add('hidden');
+
+  const slug = activeProviderData.slug;
+  const payload = { provider_id: activeProviderData.id, name: activeProviderData.name, slug: slug+'-'+activeRestaurantId, information: {} };
+
+  if (slug === 'getir') {
+    const rid = document.getElementById('getirRestaurantId').value;
+    const sk  = document.getElementById('getirSecretKey').value;
+    payload.status          = document.getElementById('intStatus').value;
+    payload.auto_approve    = document.getElementById('intAutoApprove').value;
+    payload.service         = document.getElementById('intService').value;
+    payload.do_not_knock    = document.getElementById('intDoNotKnock').value;
+    payload.drop_off_at_door= document.getElementById('intDropOffAtDoor').value;
+    payload.is_eco_friendly = document.getElementById('intIsEcoFriendly').value;
+    payload.information     = { ...existingInformation, restaurantId: rid };
+    if (sk) payload.information.secretKey = sk;
+  }
+  if (slug === 'trendyol') {
+    const sid  = document.getElementById('trendyolSupplierId').value;
+    const stid = document.getElementById('trendyolStoreId').value;
+    const ak   = document.getElementById('trendyolApiKey').value;
+    const ask  = document.getElementById('trendyolApiSecretKey').value;
+    payload.status       = document.getElementById('trendyolStatus').value;
+    payload.auto_approve = document.getElementById('trendyolAutoApprove').value;
+    payload.information  = { ...existingInformation, supplierId:sid, storeId:stid, apiKey:ak };
+    if (ask) payload.information.apiSecretKey = ask;
+  }
+  if (slug === 'migros') {
+    payload.status      = document.getElementById('migrosStatus').value;
+    payload.information = {
+      ...existingInformation,
+      apiKey:       document.getElementById('migrosApiKey').value,
+      storeId:      document.getElementById('migrosStoreId').value,
+      storeGroupId: document.getElementById('migrosStoreGroupId').value,
+      env:          document.getElementById('migrosEnv').value,
+    };
+  }
+
+  try {
+    let res;
+    if (editingIntegrationId) {
+      res = await fetch(`/api/restaurants/${activeRestaurantId}/providers/${editingIntegrationId}`, {
+        method:'PUT', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify(payload)
+      });
+    } else {
+      res = await fetch(`/api/restaurants/${activeRestaurantId}/providers`, {
+        method:'POST', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify(payload)
+      });
+    }
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error||'Hata');
+    toast(editingIntegrationId ? 'Entegrasyon güncellendi' : 'Entegrasyon eklendi', 'success');
+    closeModal('integrationModal');
+    loadDetailIntegrations(activeRestaurantId);
+  } catch(err) {
+    errEl.textContent=err.message; errEl.classList.remove('hidden');
+  } finally { btn.disabled=false; btn.textContent='Kaydet'; }
+});
+
+const storeOpenState = {}; // integrationId → true/false/null
+
+async function toggleStoreStatus(providerSlug, integrationId, switchBtn) {
+  const current = storeOpenState[integrationId];
+  const isOpen = current === true ? false : true; // toggle
+  switchBtn.disabled = true;
+  try {
+    const res = await fetch(`/api/${providerSlug}/${integrationId}/status`, {
+      method: 'PUT',
+      headers: { 'Authorization':'Bearer '+token, 'Content-Type':'application/json' },
+      body: JSON.stringify({ is_open: isOpen })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error||'Hata');
+    storeOpenState[integrationId] = isOpen;
+    updateSwitchUI(integrationId, isOpen);
+  } catch(err) {
+    toast(err.message, 'error');
+  } finally {
+    switchBtn.disabled = false;
+  }
+}
+
+function updateSwitchUI(integrationId, isOpen) {
+  const sw = document.getElementById('store-switch-'+integrationId);
+  const lb = document.getElementById('store-label-'+integrationId);
+  if (!sw || !lb) return;
+  sw.className = sw.className.replace(/bg-green-500|bg-gray-600/, isOpen ? 'bg-green-500' : 'bg-gray-600');
+  sw.setAttribute('aria-checked', isOpen);
+  const knob = sw.querySelector('span');
+  knob.className = knob.className.replace(/translate-x-4|translate-x-0/, isOpen ? 'translate-x-4' : 'translate-x-0');
+  lb.textContent = isOpen ? 'Açık' : 'Kapalı';
+  lb.className = 'text-xs font-medium ' + (isOpen ? 'text-green-400' : 'text-orange-400');
+}
+
+async function deleteIntegration(restaurantId, integrationId) {
+  if (!await confirmToast('Bu entegrasyonu silmek istiyor musunuz?')) return;
+  await api(`/api/restaurants/${restaurantId}/providers/${integrationId}`, {method:'DELETE'});
+  toast('Entegrasyon silindi', 'success');
+  loadDetailIntegrations(restaurantId);
+}
+
+// ============ ORDERS (Global) ============
+let currentOrderStatus = '';
+
+async function initOrdersPage() {
+  currentOrderStatus = '';
+  const data = await api('/api/restaurants');
+  const restaurants = data?.data || [];
+  const sel = document.getElementById('orderRestaurantFilter');
+  sel.innerHTML = '<option value="">Tüm Restoranlar</option>' +
+    restaurants.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+  loadOrders('');
+}
+
+function setOrderStatus(s) {
+  currentOrderStatus = s;
+  loadOrders(s);
+}
+
+function applyOrderFilters() {
+  loadOrders(currentOrderStatus);
+}
+
+async function loadOrders(status) {
+  currentOrderStatus = status;
+  const restaurantId = document.getElementById('orderRestaurantFilter')?.value || '';
+  const url = restaurantId
+    ? `/api/restaurants/${restaurantId}/orders` + (status ? '?status='+status : '')
+    : '/api/orders' + (status ? '?status='+status : '');
+  const data = await api(url);
+  const orders = data?.data || [];
+  const el = document.getElementById('orderList');
+  if (!orders.length) {
+    el.innerHTML = '<div class="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center text-gray-500 text-sm">Sipariş bulunamadı.</div>';
+    return;
+  }
+  el.innerHTML = orders.map(o=>`
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold">#${o.id}</span>
+            <span class="text-gray-400 text-sm">${o.restaurant?.name||''}</span>
+            <span class="text-xs text-gray-500">• ${o.restaurant_provider?.provider?.name||''}</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-0.5">${new Date(o.created_at).toLocaleString('tr-TR')}</p>
+          ${o.customer_name?`<p class="text-sm text-gray-300 mt-1">👤 ${o.customer_name}${o.customer_phone?' · '+o.customer_phone:''}</p>`:''}
+          ${o.total_amount?`<p class="text-sm font-semibold mt-0.5">₺${o.total_amount.toFixed(2)}</p>`:''}
+          ${o.webhook_sent?'<p class="text-xs text-green-500 mt-1">✓ Webhook gönderildi</p>':''}
+        </div>
+        <span class="text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${ORDER_SC[o.status]||'bg-gray-700 text-gray-400'}">${ORDER_SL[o.status]||o.status}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============ RESTAURANT FORM ============
+document.getElementById('restaurantForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = e.target.querySelector('[type=submit]');
+  btn.disabled=true; btn.textContent='Kaydediliyor...';
+  const errEl = document.getElementById('rError');
+  errEl.classList.add('hidden');
+  try {
+    const res = await fetch('/api/restaurants', {
+      method:'POST',
+      headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+      body: JSON.stringify({
+        name: document.getElementById('rName').value,
+        slug: document.getElementById('rSlug').value,
+        phone: document.getElementById('rPhone').value,
+        address: document.getElementById('rAddress').value,
+        webhook_url: document.getElementById('rWebhook').value,
+        status: document.getElementById('rStatus').value,
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error||'Hata');
+    toast('Restoran eklendi', 'success');
+    closeModal('restaurantModal');
+    e.target.reset();
+    // Reload current page
+    const activePage = document.querySelector('.page.active')?.id;
+    if (activePage === 'page-dashboard') loadDashboard();
+    else loadRestaurants();
+  } catch(err) {
+    errEl.textContent=err.message; errEl.classList.remove('hidden');
+  } finally { btn.disabled=false; btn.textContent='Kaydet'; }
+});
+
+document.getElementById('rName').addEventListener('input', e => {
+  document.getElementById('rSlug').value = toSlug(e.target.value);
+});
+
+// ============ GETİR YÖNETİM ============
+let currentGetirIntegrationId = null;
+let getirStatusIsOpen = false;
+let getirBusyIsOn = false;
+let getirCourierIsOn = false;
+
+function openGetirManage(integrationId, restaurantNameEncoded) {
+  currentGetirIntegrationId = integrationId;
+  const name = decodeURIComponent(restaurantNameEncoded || '');
+  document.getElementById('getirManageSubtitle').textContent = name ? name + ' · Getir Entegrasyonu #' + integrationId : 'Entegrasyon #' + integrationId;
+  document.getElementById('getirMenuLink').href = `/panel/menu?id=${integrationId}&provider=getir&name=${restaurantNameEncoded||''}`;
+
+  // Reset toggles
+  setGetirToggle('getirStatusToggle', false);
+  setGetirToggle('getirBusyToggle', false);
+  setGetirToggle('getirCourierToggle', false);
+  getirStatusIsOpen = false;
+  getirBusyIsOn = false;
+  getirCourierIsOn = false;
+
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-getir-manage').classList.add('active');
+  document.getElementById('nav-restaurants').classList.add('active');
+
+  loadGetirInfo();
+  loadGetirWorkingHours();
+}
+
+function setGetirToggle(id, on) {
+  const btn = document.getElementById(id);
+  if (!btn) return;
+  btn.className = `relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ${on ? 'bg-green-500' : 'bg-gray-600'}`;
+  btn.setAttribute('aria-checked', on);
+  const thumb = btn.querySelector('span');
+  if (thumb) thumb.className = `pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform duration-200 ${on ? 'translate-x-4' : 'translate-x-0'}`;
+}
+
+async function loadGetirInfo() {
+  const el = document.getElementById('getirInfoContent');
+  el.innerHTML = '<p class="text-gray-600">Yükleniyor...</p>';
+  const data = await api(`/api/getir/${currentGetirIntegrationId}/info`);
+  if (data?.error) { el.innerHTML = `<p class="text-red-400">${data.error}</p>`; return; }
+  const info = data?.data || {};
+  el.innerHTML = `
+    <div class="flex justify-between"><span class="text-gray-500">Restoran ID</span><span class="font-mono text-gray-300">${info.id||'—'}</span></div>
+    <div class="flex justify-between"><span class="text-gray-500">İsim</span><span class="text-gray-300">${info.name||'—'}</span></div>
+    <div class="flex justify-between"><span class="text-gray-500">Durum</span><span class="${info.status===1?'text-green-400':'text-orange-400'}">${info.status===1?'Açık':'Kapalı'} (${info.status})</span></div>
+    <div class="flex justify-between"><span class="text-gray-500">Ort. Hazırlama</span><span class="text-gray-300">${info.averagePreparationTime||0} dk</span></div>
+    <div class="flex justify-between"><span class="text-gray-500">Kurye</span><span class="${info.isCourierAvailable?'text-green-400':'text-red-400'}">${info.isCourierAvailable?'Aktif':'Pasif'}</span></div>
+  `;
+  // Sync toggle to actual status
+  getirStatusIsOpen = info.status === 1;
+  setGetirToggle('getirStatusToggle', getirStatusIsOpen);
+  document.getElementById('getirTimeOffRow').classList.toggle('hidden', getirStatusIsOpen);
+  getirCourierIsOn = info.isCourierAvailable;
+  setGetirToggle('getirCourierToggle', getirCourierIsOn);
+}
+
+async function toggleGetirStatus() {
+  const newOpen = !getirStatusIsOpen;
+  const body = newOpen
+    ? { is_open: true }
+    : { is_open: false, time_off_amount: parseInt(document.getElementById('getirTimeOffAmount').value) };
+  const data = await api(`/api/getir/${currentGetirIntegrationId}/status`, { method: 'PUT', body: JSON.stringify(body) });
+  if (data?.error) { toast(data.error, 'error'); return; }
+  getirStatusIsOpen = newOpen;
+  setGetirToggle('getirStatusToggle', newOpen);
+  document.getElementById('getirTimeOffRow').classList.toggle('hidden', newOpen);
+  toast(newOpen ? 'Restoran Getir\'de açıldı' : 'Restoran Getir\'de kapatıldı', 'success');
+}
+
+async function setGetirPosStatus(status) {
+  const data = await api(`/api/getir/${currentGetirIntegrationId}/pos-status`, { method: 'PUT', body: JSON.stringify({ pos_status: status }) });
+  if (data?.error) { toast(data.error, 'error'); return; }
+  toast(`POS durumu ${status===100?'aktif':'pasif'} yapıldı`, 'success');
+}
+
+async function toggleGetirBusy() {
+  const newBusy = !getirBusyIsOn;
+  const body = { is_busy: newBusy, duration: parseInt(document.getElementById('getirBusyDuration').value) };
+  const data = await api(`/api/getir/${currentGetirIntegrationId}/busyness`, { method: 'PUT', body: JSON.stringify(body) });
+  if (data?.error) { toast(data.error, 'error'); return; }
+  getirBusyIsOn = newBusy;
+  setGetirToggle('getirBusyToggle', newBusy);
+  toast(newBusy ? 'Yoğun modu açıldı' : 'Yoğun modu kapatıldı', 'success');
+}
+
+async function toggleGetirCourier() {
+  const newOn = !getirCourierIsOn;
+  const body = newOn
+    ? { is_enabled: true }
+    : { is_enabled: false, time_off_amount: parseInt(document.getElementById('getirCourierTimeOff').value) };
+  const data = await api(`/api/getir/${currentGetirIntegrationId}/courier`, { method: 'PUT', body: JSON.stringify(body) });
+  if (data?.error) { toast(data.error, 'error'); return; }
+  getirCourierIsOn = newOn;
+  setGetirToggle('getirCourierToggle', newOn);
+  toast(newOn ? 'Kurye aktif edildi' : 'Kurye devre dışı bırakıldı', 'success');
+}
+
+const DAYS_TR = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+
+async function loadGetirWorkingHours() {
+  const el = document.getElementById('getirWorkingHoursGrid');
+  el.innerHTML = '<p class="text-xs text-gray-600">Yükleniyor...</p>';
+  const data = await api(`/api/getir/${currentGetirIntegrationId}/working-hours`);
+  if (data?.error) { el.innerHTML = `<p class="text-xs text-red-400">${data.error}</p>`; return; }
+  const hours = data?.data?.restaurantWorkingHours || [];
+  // Ensure all 7 days
+  const days = Array.from({length:7}, (_,i) => {
+    const d = hours.find(h=>h.day===i);
+    return d || { day: i, workingHours: { startTime: '09:00', endTime: '22:00' }, closed: false };
+  });
+  el.innerHTML = days.map(d=>`
+    <div class="flex items-center gap-3 py-2 border-b border-gray-800/60 last:border-0">
+      <span class="text-xs text-gray-400 w-20 shrink-0">${DAYS_TR[d.day]}</span>
+      <label class="flex items-center gap-1.5 text-xs text-gray-400 shrink-0">
+        <input type="checkbox" id="wh-closed-${d.day}" ${d.closed?'checked':''} onchange="toggleDayClosed(${d.day})" class="accent-indigo-500"> Kapalı
+      </label>
+      <div id="wh-times-${d.day}" class="flex items-center gap-2 ${d.closed?'opacity-30 pointer-events-none':''}">
+        <input type="time" id="wh-start-${d.day}" value="${d.workingHours?.startTime||'09:00'}" class="inp py-1 text-xs w-28">
+        <span class="text-gray-600">—</span>
+        <input type="time" id="wh-end-${d.day}" value="${d.workingHours?.endTime||'22:00'}" class="inp py-1 text-xs w-28">
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleDayClosed(day) {
+  const closed = document.getElementById(`wh-closed-${day}`).checked;
+  const timesEl = document.getElementById(`wh-times-${day}`);
+  timesEl.classList.toggle('opacity-30', closed);
+  timesEl.classList.toggle('pointer-events-none', closed);
+}
+
+async function saveGetirWorkingHours() {
+  const days = Array.from({length:7}, (_,i) => ({
+    day: i,
+    workingHours: {
+      startTime: document.getElementById(`wh-start-${i}`)?.value || '09:00',
+      endTime:   document.getElementById(`wh-end-${i}`)?.value   || '22:00',
+    },
+    closed: document.getElementById(`wh-closed-${i}`)?.checked || false,
+  }));
+  const data = await api(`/api/getir/${currentGetirIntegrationId}/working-hours`, { method: 'PUT', body: JSON.stringify(days) });
+  if (data?.error) { toast(data.error, 'error'); return; }
+  toast('Çalışma saatleri kaydedildi', 'success');
+}
+
+// Init
+showPage('dashboard');
+</script>
+</body>
+</html>

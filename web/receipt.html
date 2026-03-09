@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sipariş Fişi</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Courier New', monospace; background: #f5f5f5; display: flex; justify-content: center; padding: 20px; }
+  .receipt {
+    background: #fff;
+    width: 380px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .header { text-align: center; border-bottom: 2px dashed #333; padding-bottom: 16px; margin-bottom: 16px; }
+  .logo { width: 160px; margin-bottom: 8px; }
+  .order-no { font-size: 13px; color: #555; }
+  .verify-code { font-size: 28px; font-weight: bold; color: #5C2D91; letter-spacing: 4px; margin: 6px 0; }
+  .section { margin-bottom: 14px; }
+  .section-title { font-size: 11px; text-transform: uppercase; color: #888; border-bottom: 1px solid #eee; padding-bottom: 4px; margin-bottom: 8px; letter-spacing: 1px; }
+  .row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+  .row.bold { font-weight: bold; }
+  .row.discount { color: #e53e3e; }
+  .row.total { font-size: 15px; font-weight: bold; border-top: 1px solid #333; padding-top: 6px; margin-top: 6px; }
+  .product-item { margin-bottom: 10px; font-size: 13px; }
+  .product-name { font-weight: bold; display: flex; justify-content: space-between; }
+  .product-option { padding-left: 14px; color: #555; font-size: 12px; display: flex; justify-content: space-between; }
+  .product-note { padding-left: 14px; color: #888; font-size: 11px; font-style: italic; }
+  .badge { display: inline-block; background: #5C2D91; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 6px; }
+  .badge.getir { background: #F9A825; color: #333; }
+  .badge.scheduled { background: #2196F3; }
+  .info-row { font-size: 12px; color: #444; margin-bottom: 3px; }
+  .label { color: #888; }
+  .note-box { background: #FFF9C4; border-left: 3px solid #F9A825; padding: 8px 10px; font-size: 12px; margin-bottom: 14px; }
+  .footer { text-align: center; font-size: 11px; color: #aaa; border-top: 2px dashed #333; padding-top: 12px; margin-top: 14px; }
+  .no-print { margin-bottom: 16px; text-align: center; }
+  .btn-print { background: #5C2D91; color: white; border: none; padding: 10px 28px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+  @media print { .no-print { display: none; } body { background: white; padding: 0; } .receipt { box-shadow: none; border: none; } }
+</style>
+</head>
+<body>
+<div class="receipt">
+  <div class="no-print">
+    <button class="btn-print" onclick="window.print()">🖨️ Yazdır</button>
+  </div>
+
+  <div class="header">
+    <img class="logo" src="https://cdn.sanity.io/images/bz9uth25/production/e0b12f7f58fe7cb99e7c5c3de05afb31e4640ea9-4608x1728.png" alt="Getir Yemek" onerror="this.style.display='none'">
+    <div id="delivery-badge"></div>
+    <div class="order-no" id="order-no"></div>
+    <div class="verify-code" id="verify-code"></div>
+    <div id="scheduled-badge"></div>
+  </div>
+
+  <div id="order-note-section" style="display:none">
+    <div class="note-box" id="order-note"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Sipariş Detayı</div>
+    <div class="row"><span class="label">Tarih</span><span id="order-date"></span></div>
+    <div class="row"><span class="label">Teslimat</span><span id="delivery-type"></span></div>
+    <div class="row"><span class="label">Ödeme</span><span id="payment-method"></span></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Müşteri</div>
+    <div class="row"><span class="label">Ad Soyad</span><span id="customer-name"></span></div>
+    <div class="row"><span class="label">Telefon</span><span id="customer-phone"></span></div>
+    <div class="row"><span class="label">Adres</span><span id="customer-address" style="max-width:220px;text-align:right;"></span></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Ürünler</div>
+    <div id="products-list"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Özet</div>
+    <div id="promotions-list"></div>
+    <div class="row" id="discount-row" style="display:none">
+      <span class="label">İndirim</span><span id="discount-amount" class="discount"></span>
+    </div>
+    <div class="row total">
+      <span>Toplam</span><span id="total-amount"></span>
+    </div>
+  </div>
+
+  <div class="footer">
+    Getir Yemek Entegrasyonu
+  </div>
+</div>
+
+<script>
+const API_BASE = '';
+
+async function loadOrder() {
+  const params = new URLSearchParams(window.location.search);
+  const orderId = params.get('id');
+  const token = params.get('token') || localStorage.getItem('token');
+
+  if (!orderId) {
+    document.body.innerHTML = '<p style="padding:20px;color:red">Sipariş ID belirtilmedi. ?id=xxx ile çağırın.</p>';
+    return;
+  }
+
+  const res = await fetch(`${API_BASE}/api/orders/${orderId}`, {
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+
+  if (!res.ok) {
+    document.body.innerHTML = '<p style="padding:20px;color:red">Sipariş bulunamadı.</p>';
+    return;
+  }
+
+  const { data } = await res.json();
+  renderReceipt(data);
+}
+
+function fmt(amount) {
+  return (amount || 0).toFixed(2) + ' ₺';
+}
+
+function formatPhone(phone) {
+  if (!phone) return '-';
+  // 90 (850) 346-9382 / 000001 formatı
+  phone = phone.replace(/\D/g, '');
+  if (phone.startsWith('90') && phone.length >= 12) {
+    const p = phone.slice(2);
+    return `90 (${p.slice(0,3)}) ${p.slice(3,6)}-${p.slice(6,10)} / ${phone.slice(-6)}`;
+  }
+  return phone;
+}
+
+function renderReceipt(order) {
+  const raw = order.raw_payload?.order || {};
+
+  // Header
+  document.getElementById('order-no').textContent = '#' + order.id + (order.provider_order_id ? ' · ' + order.provider_order_id.slice(-8) : '');
+
+  const vc = order.verification_code || raw.verificationCode || '';
+  document.getElementById('verify-code').textContent = vc || '-';
+
+  const dt = order.delivery_type || raw.deliveryType || 0;
+  const dtBadge = document.getElementById('delivery-badge');
+  const dtText = document.getElementById('delivery-type');
+  if (dt == 1) {
+    dtBadge.innerHTML = '<span class="badge getir">Getir Getirsin</span>';
+    dtText.textContent = 'Getir Getirsin';
+  } else if (dt == 2) {
+    dtBadge.innerHTML = '<span class="badge">Restoran Getirsin</span>';
+    dtText.textContent = 'Restoran Getirsin';
+  }
+
+  // İleri tarihli sipariş
+  const scheduledAt = order.scheduled_at || raw.scheduledAt;
+  if (scheduledAt) {
+    document.getElementById('scheduled-badge').innerHTML =
+      '<span class="badge scheduled">İleri Tarihli: ' + new Date(scheduledAt).toLocaleString('tr-TR') + '</span>';
+  }
+
+  // Sipariş tarihi
+  document.getElementById('order-date').textContent = new Date(order.created_at).toLocaleString('tr-TR');
+
+  // Ödeme
+  document.getElementById('payment-method').textContent = order.payment_method || raw.paymentMethod || '-';
+
+  // Müşteri
+  document.getElementById('customer-name').textContent = order.customer_name || '-';
+  document.getElementById('customer-phone').textContent = formatPhone(order.customer_phone);
+  document.getElementById('customer-address').textContent = order.customer_address || '-';
+
+  // Sipariş notu
+  const note = order.note || raw.note;
+  if (note) {
+    document.getElementById('order-note-section').style.display = 'block';
+    document.getElementById('order-note').textContent = '📝 ' + note;
+  }
+
+  // Ürünler
+  const products = raw.products || [];
+  const productsList = document.getElementById('products-list');
+  products.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'product-item';
+    div.innerHTML = `<div class="product-name"><span>${p.count}x ${p.name}</span><span>${fmt(p.price * p.count)}</span></div>`;
+    (p.options || []).forEach(opt => {
+      div.innerHTML += `<div class="product-option"><span>+ ${opt.name}</span><span>${opt.price > 0 ? fmt(opt.price) : ''}</span></div>`;
+    });
+    if (p.note) {
+      div.innerHTML += `<div class="product-note">Not: ${p.note}</div>`;
+    }
+    productsList.appendChild(div);
+  });
+
+  // Kampanyalar
+  const promotions = raw.promotions || [];
+  const promoList = document.getElementById('promotions-list');
+  promotions.forEach(promo => {
+    const badge = promo.type === 'ORTAKKAMPANYA' ? '<span class="badge">Ortak Kampanya</span>' : '';
+    promoList.innerHTML += `<div class="row discount"><span>${promo.name}${badge}</span><span>-${fmt(promo.amount)}</span></div>`;
+  });
+
+  // İndirim
+  const discount = order.discount_amount || raw.discountAmount || 0;
+  if (discount > 0) {
+    document.getElementById('discount-row').style.display = 'flex';
+    document.getElementById('discount-amount').textContent = '-' + fmt(discount);
+  }
+
+  // Toplam
+  document.getElementById('total-amount').textContent = fmt(order.total_amount);
+}
+
+loadOrder();
+</script>
+</body>
+</html>

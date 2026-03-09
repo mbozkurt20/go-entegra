@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menü Yönetimi - Entegra Panel</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen">
+
+<!-- Header -->
+<header class="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+  <div class="flex items-center gap-3">
+    <a href="/panel/dashboard" class="text-gray-400 hover:text-white transition text-sm">← Geri</a>
+    <div class="w-px h-4 bg-gray-700"></div>
+    <span id="headerProviderTitle" class="text-sm font-medium">Menü Yönetimi</span>
+    <span id="headerRestaurantName" class="text-xs text-gray-400"></span>
+  </div>
+  <div class="flex items-center gap-3">
+    <!-- Açık/Kapalı Toggle -->
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-gray-400">Restoran Durumu:</span>
+      <button id="statusToggle" onclick="toggleStatus()"
+        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
+        id="statusToggleBtn">
+        <span id="statusThumb" class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"></span>
+      </button>
+      <span id="statusLabel" class="text-xs font-medium"></span>
+    </div>
+    <button onclick="loadMenu()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs px-3 py-1.5 rounded-lg transition">
+      🔄 Yenile
+    </button>
+  </div>
+</header>
+
+<!-- Main -->
+<main class="max-w-6xl mx-auto px-6 py-6">
+
+  <!-- Info Banner -->
+  <div id="errorBanner" class="hidden bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl px-4 py-3 mb-4 text-sm"></div>
+
+  <!-- Loading -->
+  <div id="loading" class="text-center py-20 text-gray-500">
+    <div class="text-3xl mb-2">⏳</div>
+    <p id="loadingText" class="text-sm">Menü yükleniyor...</p>
+  </div>
+
+  <!-- Categories Filter -->
+  <div id="categoryFilter" class="hidden flex gap-2 mb-5 flex-wrap"></div>
+
+  <!-- Products Grid -->
+  <div id="productGrid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+  <!-- Empty -->
+  <div id="emptyState" class="hidden text-center py-20 text-gray-500">
+    <div class="text-4xl mb-3">🍽️</div>
+    <p class="text-sm">Menüde ürün bulunamadı.</p>
+  </div>
+
+</main>
+
+<!-- Price Edit Modal -->
+<div id="priceModal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50">
+  <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 w-80">
+    <h3 class="font-semibold mb-1" id="priceModalName"></h3>
+    <p class="text-xs text-gray-400 mb-4" id="priceModalCurrent"></p>
+    <div>
+      <label class="block text-xs text-gray-400 mb-1.5">Yeni Fiyat (₺)</label>
+      <input id="newPrice" type="number" min="0" step="0.01"
+        class="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+    </div>
+    <div class="flex gap-2 mt-4">
+      <button onclick="closePriceModal()" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg py-2 text-sm transition">İptal</button>
+      <button onclick="savePrice()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg py-2 text-sm transition">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .toggle-on  { background-color: #22c55e; }
+  .toggle-off { background-color: #4b5563; }
+  .thumb-on   { transform: translateX(20px); }
+  .thumb-off  { transform: translateX(2px); }
+  .product-card { background:#111827; border:1px solid #1f2937; border-radius:.75rem; overflow:hidden; transition:border-color .15s; }
+  .product-card:hover { border-color:#374151; }
+  .product-unavailable { opacity:.5; }
+  .cat-btn { padding:.375rem .875rem; border-radius:9999px; font-size:.75rem; border:1px solid #374151; color:#9ca3af; cursor:pointer; transition:all .15s; white-space:nowrap; }
+  .cat-btn:hover, .cat-btn.active { background:#4f46e5; border-color:#4f46e5; color:#fff; }
+</style>
+
+<script>
+const token = localStorage.getItem('token');
+if (!token) window.location.href = '/panel/login';
+
+const params = new URLSearchParams(location.search);
+const integrationId = params.get('id');
+const provider = params.get('provider') || 'getir';
+const restaurantName = params.get('name') || '';
+
+if (!integrationId) { location.href = '/panel/dashboard'; }
+
+document.getElementById('headerRestaurantName').textContent = restaurantName ? '— ' + restaurantName : '';
+
+const PROVIDER_LABELS = { getir: '🟣 Getir', trendyol: '🟠 Trendyol', yemeksepeti: '🔴 Yemeksepeti', migros: '🟡 Migros' };
+const providerLabel = PROVIDER_LABELS[provider] || provider;
+document.getElementById('headerProviderTitle').textContent = providerLabel + ' Menü Yönetimi';
+document.getElementById('loadingText').textContent = providerLabel + ' menüsü yükleniyor...';
+
+let allProducts = [];
+let isOpen = false;
+let editingProductId = null;
+
+async function api(path, opts={}) {
+  const r = await fetch(path, {
+    ...opts,
+    headers: { 'Authorization': 'Bearer '+token, 'Content-Type': 'application/json', ...(opts.headers||{}) }
+  });
+  if (r.status===401) { localStorage.clear(); location.href='/panel/login'; return null; }
+  return r.json();
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorBanner');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 6000);
+}
+
+// --- Status Toggle ---
+function setStatusUI(open) {
+  isOpen = open;
+  const btn   = document.getElementById('statusToggle');
+  const thumb = document.getElementById('statusThumb');
+  const label = document.getElementById('statusLabel');
+  btn.className   = 'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ' + (open ? 'toggle-on' : 'toggle-off');
+  thumb.className = 'inline-block h-4 w-4 transform rounded-full bg-white transition-transform ' + (open ? 'thumb-on' : 'thumb-off');
+  label.textContent = open ? 'Açık' : 'Kapalı';
+  label.className = 'text-xs font-medium ' + (open ? 'text-green-400' : 'text-gray-400');
+}
+
+async function toggleStatus() {
+  const newState = !isOpen;
+  const data = await api(`/api/${provider}/${integrationId}/status`, {
+    method: 'PUT',
+    body: JSON.stringify({ is_open: newState })
+  });
+  if (data?.message) {
+    setStatusUI(newState);
+  } else if (data?.error) {
+    showError(data.error);
+  }
+}
+
+function normalizeProducts(data) {
+  if (provider === 'getir') {
+    // Getir: { productCategories: [{ id, name:{tr,en}, products:[...] }] }
+    const categories = data?.productCategories || [];
+    const products = [];
+    categories.forEach(cat => {
+      (cat.products || []).forEach(p => {
+        products.push({
+          id: p.id,
+          name: p.name?.tr || p.name?.en || '',
+          description: p.description?.tr || p.description?.en || '',
+          price: p.price,
+          isAvailable: p.status === 100,
+          imageUrl: p.imageURL || '',
+          category: { id: cat.id, name: cat.name?.tr || cat.name?.en || '' }
+        });
+      });
+    });
+    return products;
+  }
+  if (provider === 'trendyol') {
+    // Trendyol: { products:[...], sections:[{ id, name, status, products:[{id,position}] }] }
+    const allProds = data?.products || [];
+    const sections = data?.sections || [];
+    const prodMap = {};
+    allProds.forEach(p => { prodMap[p.id] = p; });
+
+    const result = [];
+    if (sections.length > 0) {
+      sections.forEach(sec => {
+        if (sec.status === 'PASSIVE') return;
+        (sec.products || []).forEach(ref => {
+          const p = prodMap[ref.id];
+          if (!p) return;
+          result.push({
+            id: String(p.id),
+            name: p.name || '',
+            description: p.description || '',
+            price: p.sellingPrice ?? p.originalPrice ?? 0,
+            isAvailable: p.status !== 'PASSIVE',
+            imageUrl: '',
+            category: { id: String(sec.id), name: sec.name || '' }
+          });
+        });
+      });
+    } else {
+      allProds.forEach(p => {
+        result.push({
+          id: String(p.id),
+          name: p.name || '',
+          description: p.description || '',
+          price: p.sellingPrice ?? p.originalPrice ?? 0,
+          isAvailable: p.status !== 'PASSIVE',
+          imageUrl: '',
+          category: { id: '0', name: 'Ürünler' }
+        });
+      });
+    }
+    return result;
+  }
+  if (provider === 'migros') {
+    // Migros: { menuHeaderInfos:[{ id, name, status, foodMenuItemDetailsDTOs:[...] }] }
+    // product_id için compound format: "menuItemId_productId"
+    const headers = data?.menuHeaderInfos || [];
+    const result = [];
+    headers.forEach(cat => {
+      if (cat.status === 'PASSIVE') return;
+      (cat.foodMenuItemDetailsDTOs || []).forEach(item => {
+        const price = item.defaultPrimaryDiscountedPrice > 0
+          ? item.defaultPrimaryDiscountedPrice
+          : item.defaultPrimaryPrice ?? 0;
+        result.push({
+          id: String(item.id) + '_' + String(item.productId),
+          name: item.productName || '',
+          description: item.productDescription || '',
+          price: price,
+          isAvailable: item.status !== 'PASSIVE',
+          imageUrl: '',
+          category: { id: String(cat.id), name: cat.name || '' }
+        });
+      });
+    });
+    return result;
+  }
+  return [];
+}
+
+// --- Menu ---
+async function loadMenu() {
+  document.getElementById('loading').classList.remove('hidden');
+  document.getElementById('productGrid').classList.add('hidden');
+  document.getElementById('categoryFilter').classList.add('hidden');
+  document.getElementById('emptyState').classList.add('hidden');
+
+  const data = await api(`/api/${provider}/${integrationId}/menu`);
+  document.getElementById('loading').classList.add('hidden');
+
+  if (!data || data.error) {
+    showError(data?.error || 'Menü yüklenemedi. API bilgilerini kontrol edin.');
+    document.getElementById('emptyState').classList.remove('hidden');
+    return;
+  }
+
+  allProducts = normalizeProducts(data.data);
+
+  if (!allProducts.length) {
+    document.getElementById('emptyState').classList.remove('hidden');
+    return;
+  }
+
+  renderCategoryFilter();
+  renderProducts(allProducts);
+}
+
+function renderCategoryFilter() {
+  const cats = {};
+  allProducts.forEach(p => {
+    if (p.category) cats[p.category.id] = p.category.name;
+  });
+
+  const el = document.getElementById('categoryFilter');
+  el.innerHTML = `<button class="cat-btn active" onclick="filterByCategory('')">Tümü (${allProducts.length})</button>` +
+    Object.entries(cats).map(([id, name]) => {
+      const count = allProducts.filter(p => p.category?.id === id).length;
+      return `<button class="cat-btn" onclick="filterByCategory('${id}')">${name} (${count})</button>`;
+    }).join('');
+  el.classList.remove('hidden');
+}
+
+function filterByCategory(catId) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  const filtered = catId ? allProducts.filter(p => p.category?.id === catId) : allProducts;
+  renderProducts(filtered);
+}
+
+function renderProducts(products) {
+  const el = document.getElementById('productGrid');
+  el.innerHTML = products.map(p => `
+    <div class="product-card ${p.isAvailable ? '' : 'product-unavailable'}" id="pc-${p.id}">
+      ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${p.name}" class="w-full h-32 object-cover">` :
+        `<div class="w-full h-20 bg-gray-800 flex items-center justify-center text-3xl">🍽️</div>`}
+      <div class="p-3">
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-sm leading-tight">${p.name}</p>
+            ${p.category ? `<p class="text-xs text-gray-500 mt-0.5">${p.category.name}</p>` : ''}
+            ${p.description ? `<p class="text-xs text-gray-400 mt-1 line-clamp-2">${p.description}</p>` : ''}
+          </div>
+          <!-- Aktif/Pasif toggle -->
+          <button onclick="toggleProduct('${p.id}', ${p.isAvailable})"
+            class="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition
+              ${p.isAvailable ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20' : 'bg-gray-700 text-gray-400 hover:bg-gray-600'}"
+            title="${p.isAvailable ? 'Pasife al' : 'Aktife al'}">
+            ${p.isAvailable ? '✓' : '✕'}
+          </button>
+        </div>
+        <div class="flex items-center justify-between mt-3 pt-2 border-t border-gray-800">
+          <div>
+            <p class="text-sm font-bold text-white">₺${p.price.toFixed(2)}</p>
+            <p class="text-xs ${p.isAvailable ? 'text-green-400' : 'text-gray-500'}">${p.isAvailable ? 'Satışta' : 'Pasif'}</p>
+          </div>
+          <button onclick="openPriceModal('${p.id}', '${p.name.replace(/'/g,"\\'")}', ${p.price})"
+            class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded-lg transition">
+            Fiyat Düzenle
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  el.classList.remove('hidden');
+}
+
+async function toggleProduct(productId, currentState) {
+  const newState = !currentState;
+  let body;
+  if (provider === 'getir') {
+    body = { status: newState ? 100 : 200 };
+  } else {
+    body = { is_available: newState };
+  }
+  const data = await api(`/api/${provider}/${integrationId}/products/${productId}/status`, {
+    method: 'PUT',
+    body: JSON.stringify(body)
+  });
+  if (data?.error) {
+    showError(data.error);
+  } else {
+    // Listeyi güncelle
+    allProducts = allProducts.map(p => p.id === productId ? {...p, isAvailable: newState} : p);
+    const card = document.getElementById('pc-' + productId);
+    if (card) {
+      // Sayfayı yeniden yükle
+      renderProducts(allProducts);
+    }
+  }
+}
+
+// --- Price Modal ---
+function openPriceModal(productId, name, currentPrice) {
+  editingProductId = productId;
+  document.getElementById('priceModalName').textContent = name;
+  document.getElementById('priceModalCurrent').textContent = 'Mevcut fiyat: ₺' + currentPrice.toFixed(2);
+  document.getElementById('newPrice').value = currentPrice.toFixed(2);
+  document.getElementById('priceModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('newPrice').focus(), 100);
+}
+
+function closePriceModal() {
+  document.getElementById('priceModal').classList.add('hidden');
+  editingProductId = null;
+}
+
+async function savePrice() {
+  const price = parseFloat(document.getElementById('newPrice').value);
+  if (!price || price <= 0) { showError('Geçerli bir fiyat girin'); return; }
+
+  const data = await api(`/api/${provider}/${integrationId}/products/${editingProductId}/price`, {
+    method: 'PUT',
+    body: JSON.stringify({ price })
+  });
+
+  if (data?.error) {
+    showError(data.error);
+  } else {
+    allProducts = allProducts.map(p => p.id === editingProductId ? {...p, price} : p);
+    renderProducts(allProducts);
+    closePriceModal();
+  }
+}
+
+document.getElementById('priceModal').addEventListener('click', function(e) {
+  if (e.target === this) closePriceModal();
+});
+
+document.getElementById('newPrice').addEventListener('keydown', e => {
+  if (e.key === 'Enter') savePrice();
+  if (e.key === 'Escape') closePriceModal();
+});
+
+// Init
+setStatusUI(false);
+loadMenu();
+</script>
+</body>
+</html>
