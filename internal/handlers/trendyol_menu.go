@@ -54,6 +54,25 @@ func (h *TrendyolMenuHandler) newClient(c *gin.Context, rp *models.RestaurantPro
 	return client, true
 }
 
+// GetInfo mağaza bilgisini döner
+// GET /api/trendyol/:integration_id/info
+func (h *TrendyolMenuHandler) GetInfo(c *gin.Context) {
+	rp, ok := h.getIntegration(c)
+	if !ok {
+		return
+	}
+	client, ok := h.newClient(c, rp)
+	if !ok {
+		return
+	}
+	info, err := client.GetStoreInfo()
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": info})
+}
+
 // SetStatus restoranı Trendyol'da açar/kapatır
 // PUT /api/trendyol/:integration_id/status
 func (h *TrendyolMenuHandler) SetStatus(c *gin.Context) {
@@ -139,6 +158,134 @@ func (h *TrendyolMenuHandler) UpdateProductStatus(c *gin.Context) {
 		status = "aktif"
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Ürün " + status + " yapıldı"})
+}
+
+// UpdateSectionStatus kategoriyi aktif/pasif yapar
+// PUT /api/trendyol/:integration_id/sections/:section_id/status
+func (h *TrendyolMenuHandler) UpdateSectionStatus(c *gin.Context) {
+	rp, ok := h.getIntegration(c)
+	if !ok {
+		return
+	}
+	client, ok := h.newClient(c, rp)
+	if !ok {
+		return
+	}
+	sectionID := c.Param("section_id")
+	var req struct {
+		IsAvailable bool `json:"is_available"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := client.UpdateSectionStatus(sectionID, req.IsAvailable); err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+	status := "pasif"
+	if req.IsAvailable {
+		status = "aktif"
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Kategori " + status + " yapıldı"})
+}
+
+// GetBatchStatus batch işlem sonucunu döner
+// GET /api/trendyol/:integration_id/batch/:batch_id
+func (h *TrendyolMenuHandler) GetBatchStatus(c *gin.Context) {
+	rp, ok := h.getIntegration(c)
+	if !ok {
+		return
+	}
+	client, ok := h.newClient(c, rp)
+	if !ok {
+		return
+	}
+	result, err := client.GetBatchStatus(c.Param("batch_id"))
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": result})
+}
+
+// UpdateWorkingHours çalışma saatlerini günceller
+// PUT /api/trendyol/:integration_id/working-hours
+func (h *TrendyolMenuHandler) UpdateWorkingHours(c *gin.Context) {
+	rp, ok := h.getIntegration(c)
+	if !ok {
+		return
+	}
+	client, ok := h.newClient(c, rp)
+	if !ok {
+		return
+	}
+	var req struct {
+		WorkingHours []trendyolSvc.WorkingHoursSlot `json:"working_hours"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "JSON parse hatası: " + err.Error()})
+		return
+	}
+	if len(req.WorkingHours) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "working_hours alanı gereklidir"})
+		return
+	}
+	if err := client.UpdateWorkingHours(req.WorkingHours); err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Çalışma saatleri güncellendi"})
+}
+
+// UpdateDeliveryTime teslimat süresini günceller
+// PUT /api/trendyol/:integration_id/delivery-time
+func (h *TrendyolMenuHandler) UpdateDeliveryTime(c *gin.Context) {
+	rp, ok := h.getIntegration(c)
+	if !ok {
+		return
+	}
+	client, ok := h.newClient(c, rp)
+	if !ok {
+		return
+	}
+	var req struct {
+		Minutes int `json:"minutes" binding:"required,gt=0"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := client.UpdateDeliveryTime(req.Minutes); err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Teslimat süresi güncellendi"})
+}
+
+// UpdateDeliveryZones teslimat bölgelerini günceller
+// PUT /api/trendyol/:integration_id/delivery-zones
+func (h *TrendyolMenuHandler) UpdateDeliveryZones(c *gin.Context) {
+	rp, ok := h.getIntegration(c)
+	if !ok {
+		return
+	}
+	client, ok := h.newClient(c, rp)
+	if !ok {
+		return
+	}
+	var req struct {
+		Zones []trendyolSvc.DeliveryZoneRequest `json:"zones"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil || len(req.Zones) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "zones alanı gereklidir"})
+		return
+	}
+	if err := client.UpdateDeliveryZones(req.Zones); err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Teslimat bölgeleri güncellendi"})
 }
 
 // UpdateProductPrice ürün fiyatını günceller

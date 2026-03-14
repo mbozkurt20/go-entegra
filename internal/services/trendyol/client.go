@@ -26,7 +26,7 @@ type Client struct {
 
 func NewClient(supplierID, storeID, apiKey, apiSecretKey, env string) *Client {
 	baseURL := BaseURLProd
-	if env != "prod" && env != "1" {
+	if env == "stage" || env == "0" {
 		baseURL = BaseURLStage
 	}
 	return &Client{
@@ -35,7 +35,7 @@ func NewClient(supplierID, storeID, apiKey, apiSecretKey, env string) *Client {
 		storeID:      storeID,
 		apiKey:       apiKey,
 		apiSecretKey: apiSecretKey,
-		httpClient:   &http.Client{Timeout: 15 * time.Second},
+		httpClient: &http.Client{Timeout: 15 * time.Second},
 	}
 }
 
@@ -97,8 +97,27 @@ func checkResp(resp *http.Response, action string) error {
 
 // --- Restoran ---
 
+func (c *Client) GetStoreInfo() (*StoreInfo, error) {
+	path := fmt.Sprintf("/integrator/store/meal/suppliers/%s/stores/%s", c.supplierID, c.storeID)
+	resp, err := c.do("GET", path, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if err := checkResp(resp, "mağaza bilgisi"); err != nil {
+		return nil, err
+	}
+	var wrapper struct {
+		Data StoreInfo `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&wrapper); err != nil {
+		return nil, fmt.Errorf("mağaza bilgisi decode hatası: %w", err)
+	}
+	return &wrapper.Data, nil
+}
+
 func (c *Client) SetRestaurantStatus(isOpen bool) error {
-	path := fmt.Sprintf("/integrator/restaurant/meal/suppliers/%s/stores/%s/status", c.supplierID, c.storeID)
+	path := fmt.Sprintf("/integrator/store/meal/suppliers/%s/stores/%s/status", c.supplierID, c.storeID)
 	resp, err := c.do("PUT", path, RestaurantStatusRequest{IsOpen: isOpen})
 	if err != nil {
 		return err
@@ -107,7 +126,70 @@ func (c *Client) SetRestaurantStatus(isOpen bool) error {
 	return checkResp(resp, "restoran durumu")
 }
 
-// --- Menü ---
+func (c *Client) UpdateWorkingHours(slots []WorkingHoursSlot) error {
+	path := fmt.Sprintf("/integrator/store/meal/suppliers/%s/stores/%s/working-hours", c.supplierID, c.storeID)
+	resp, err := c.do("PUT", path, WorkingHoursRequest{WorkingHours: slots})
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return checkResp(resp, "çalışma saatleri")
+}
+
+func (c *Client) UpdateDeliveryTime(minutes int) error {
+	path := fmt.Sprintf("/integrator/store/meal/suppliers/%s/stores/%s/delivery-time", c.supplierID, c.storeID)
+	resp, err := c.do("PUT", path, DeliveryTimeRequest{DeliveryTime: minutes})
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return checkResp(resp, "teslimat süresi")
+}
+
+func (c *Client) UpdateDeliveryZones(zones []DeliveryZoneRequest) error {
+	path := fmt.Sprintf("/integrator/store/meal/suppliers/%s/stores/%s/delivery-zones", c.supplierID, c.storeID)
+	resp, err := c.do("PUT", path, DeliveryZonesRequest{DeliveryZones: zones})
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return checkResp(resp, "teslimat bölgeleri")
+}
+
+// --- Menü / Bölüm ---
+
+func (c *Client) UpdateSectionStatus(sectionID string, available bool) error {
+	path := fmt.Sprintf("/integrator/product/meal/suppliers/%s/stores/%s/sections/%s/status",
+		c.supplierID, c.storeID, sectionID)
+	status := "PASSIVE"
+	if available {
+		status = "ACTIVE"
+	}
+	resp, err := c.do("PUT", path, SectionStatusRequest{Status: status})
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return checkResp(resp, "kategori durum güncelleme")
+}
+
+func (c *Client) GetBatchStatus(batchID string) (*BatchStatusResponse, error) {
+	path := fmt.Sprintf("/integrator/product/meal/suppliers/%s/stores/%s/batch-requests/%s",
+		c.supplierID, c.storeID, batchID)
+	resp, err := c.do("GET", path, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if err := checkResp(resp, "batch durum"); err != nil {
+		return nil, err
+	}
+	var result BatchStatusResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("batch decode hatası: %w", err)
+	}
+	return &result, nil
+}
 
 func (c *Client) GetMenu() (*MenuResponse, error) {
 	path := fmt.Sprintf("/integrator/product/meal/suppliers/%s/stores/%s/products", c.supplierID, c.storeID)

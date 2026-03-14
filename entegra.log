@@ -1,0 +1,565 @@
+2026/03/14 19:24:04 Running database migrations...
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[2.952ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'businesses' AND table_type = 'BASE TABLE'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.203ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[7.513ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'go_entegra' AND table_schema = CURRENT_SCHEMA() AND table_name = 'businesses'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.366ms] [34;1m[rows:-][0m SELECT * FROM "businesses" LIMIT 5
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[4.978ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'go_entegra' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'businesses' AND constraint_type = 'UNIQUE'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[5.944ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'go_entegra' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'businesses'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.614ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'businesses'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[2.364ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'businesses' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'businesses' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[1.416ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'businesses' AND column_name = 'name') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'businesses' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[1.169ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'businesses' AND column_name = 'email') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'businesses' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.950ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'businesses' AND column_name = 'password') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'businesses' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.900ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'businesses' AND column_name = 'phone') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'businesses' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.885ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'businesses' AND column_name = 'status') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'businesses' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.089ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'businesses' AND column_name = 'is_super') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'businesses' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.074ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'businesses' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'businesses' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.065ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'businesses' AND column_name = 'updated_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'businesses' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.060ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'businesses' AND column_name = 'deleted_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'businesses' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.965ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'businesses' AND indexname = 'idx_businesses_email' AND schemaname = CURRENT_SCHEMA()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.352ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'businesses' AND indexname = 'idx_businesses_deleted_at' AND schemaname = CURRENT_SCHEMA()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.293ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurants' AND table_type = 'BASE TABLE'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.060ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[3.275ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'go_entegra' AND table_schema = CURRENT_SCHEMA() AND table_name = 'restaurants'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.192ms] [34;1m[rows:-][0m SELECT * FROM "restaurants" LIMIT 5
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[3.315ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'go_entegra' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'restaurants' AND constraint_type = 'UNIQUE'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[3.237ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'go_entegra' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'restaurants'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.210ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'restaurants'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.115ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurants' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurants' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.070ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurants' AND column_name = 'business_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurants' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.057ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurants' AND column_name = 'name') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurants' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.071ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurants' AND column_name = 'slug') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurants' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.075ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurants' AND column_name = 'phone') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurants' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.051ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurants' AND column_name = 'address') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurants' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.063ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurants' AND column_name = 'webhook_url') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurants' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.069ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurants' AND column_name = 'status') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurants' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.054ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurants' AND column_name = 'credits') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurants' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.054ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurants' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurants' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.052ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurants' AND column_name = 'updated_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurants' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.052ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurants' AND column_name = 'deleted_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurants' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.583ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurants' AND constraint_name = 'fk_businesses_restaurants'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.299ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'restaurants' AND indexname = 'idx_restaurants_business_id' AND schemaname = CURRENT_SCHEMA()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.259ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'restaurants' AND indexname = 'idx_restaurants_slug' AND schemaname = CURRENT_SCHEMA()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.261ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'restaurants' AND indexname = 'idx_restaurants_deleted_at' AND schemaname = CURRENT_SCHEMA()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.314ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'providers' AND table_type = 'BASE TABLE'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.048ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[2.456ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'go_entegra' AND table_schema = CURRENT_SCHEMA() AND table_name = 'providers'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.146ms] [34;1m[rows:-][0m SELECT * FROM "providers" LIMIT 5
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[3.231ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'go_entegra' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'providers' AND constraint_type = 'UNIQUE'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[2.591ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'go_entegra' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'providers'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.173ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'providers'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.107ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'providers' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.072ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'providers' AND column_name = 'name') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.074ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'providers' AND column_name = 'slug') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.070ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'providers' AND column_name = 'status') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.055ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'providers' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.053ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'providers' AND column_name = 'updated_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.304ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'providers' AND indexname = 'idx_providers_slug' AND schemaname = CURRENT_SCHEMA()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.278ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers' AND table_type = 'BASE TABLE'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.246ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[2.859ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'go_entegra' AND table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.201ms] [34;1m[rows:-][0m SELECT * FROM "restaurant_providers" LIMIT 5
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[3.108ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'go_entegra' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'restaurant_providers' AND constraint_type = 'UNIQUE'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[3.062ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'go_entegra' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'restaurant_providers'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.191ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'restaurant_providers'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.120ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurant_providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.076ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers' AND column_name = 'restaurant_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurant_providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.063ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers' AND column_name = 'provider_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurant_providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.191ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers' AND column_name = 'name') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurant_providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.069ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers' AND column_name = 'slug') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurant_providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.051ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers' AND column_name = 'information') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurant_providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.069ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers' AND column_name = 'status') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurant_providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.050ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers' AND column_name = 'is_eco_friendly') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurant_providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.052ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers' AND column_name = 'do_not_knock') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurant_providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.048ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers' AND column_name = 'drop_off_at_door') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurant_providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.064ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers' AND column_name = 'auto_approve') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurant_providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.065ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers' AND column_name = 'service') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurant_providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.055ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurant_providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.054ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers' AND column_name = 'updated_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurant_providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.053ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers' AND column_name = 'deleted_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'restaurant_providers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.511ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers' AND constraint_name = 'fk_providers_restaurant_providers'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.439ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'restaurant_providers' AND constraint_name = 'fk_restaurants_restaurant_providers'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.079ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'restaurant_providers' AND indexname = 'idx_restaurant_providers_restaurant_id' AND schemaname = CURRENT_SCHEMA()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.061ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'restaurant_providers' AND indexname = 'idx_restaurant_providers_provider_id' AND schemaname = CURRENT_SCHEMA()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.050ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'restaurant_providers' AND indexname = 'idx_restaurant_providers_deleted_at' AND schemaname = CURRENT_SCHEMA()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.246ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND table_type = 'BASE TABLE'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.026ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[3.025ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'go_entegra' AND table_schema = CURRENT_SCHEMA() AND table_name = 'orders'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.221ms] [34;1m[rows:-][0m SELECT * FROM "orders" LIMIT 5
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[3.310ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'go_entegra' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'orders' AND constraint_type = 'UNIQUE'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[3.236ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'go_entegra' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'orders'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.297ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'orders'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.240ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.167ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'restaurant_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.139ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'restaurant_provider_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.132ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'provider_order_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.078ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'status') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.125ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'raw_payload') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.072ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'total_amount') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.057ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'discount_amount') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.072ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'customer_name') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.065ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'customer_phone') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.055ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'customer_address') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.052ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'note') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.052ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'delivery_type') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.053ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'payment_method') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.054ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'verification_code') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.051ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'scheduled_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.055ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'active') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.052ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'webhook_sent') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.063ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'webhook_sent_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.066ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.051ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'updated_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.049ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND column_name = 'deleted_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'orders' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.506ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND constraint_name = 'fk_orders_restaurant_provider'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.435ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'orders' AND constraint_name = 'fk_restaurants_orders'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.095ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'orders' AND indexname = 'idx_orders_restaurant_id' AND schemaname = CURRENT_SCHEMA()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.057ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'orders' AND indexname = 'idx_orders_restaurant_provider_id' AND schemaname = CURRENT_SCHEMA()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.054ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'orders' AND indexname = 'idx_orders_provider_order_id' AND schemaname = CURRENT_SCHEMA()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.048ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'orders' AND indexname = 'idx_orders_deleted_at' AND schemaname = CURRENT_SCHEMA()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.297ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'credit_transactions' AND table_type = 'BASE TABLE'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.049ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[4.005ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'go_entegra' AND table_schema = CURRENT_SCHEMA() AND table_name = 'credit_transactions'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.214ms] [34;1m[rows:-][0m SELECT * FROM "credit_transactions" LIMIT 5
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[2.973ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'go_entegra' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'credit_transactions' AND constraint_type = 'UNIQUE'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[2.909ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'go_entegra' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'credit_transactions'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.179ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'credit_transactions'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.109ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'credit_transactions' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'credit_transactions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.083ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'credit_transactions' AND column_name = 'restaurant_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'credit_transactions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.068ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'credit_transactions' AND column_name = 'amount') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'credit_transactions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.061ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'credit_transactions' AND column_name = 'balance') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'credit_transactions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.057ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'credit_transactions' AND column_name = 'type') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'credit_transactions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.053ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'credit_transactions' AND column_name = 'source') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'credit_transactions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.063ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'credit_transactions' AND column_name = 'description') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'credit_transactions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.322ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'credit_transactions' AND column_name = 'order_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'credit_transactions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.279ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'credit_transactions' AND column_name = 'reference') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'credit_transactions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.272ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'credit_transactions' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'credit_transactions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.783ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'credit_transactions' AND constraint_name = 'fk_credit_transactions_restaurant'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.193ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'credit_transactions' AND constraint_name = 'fk_credit_transactions_order'
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.134ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'credit_transactions' AND indexname = 'idx_credit_transactions_restaurant_id' AND schemaname = CURRENT_SCHEMA()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:35
+[0m[33m[0.113ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'credit_transactions' AND indexname = 'idx_credit_transactions_order_id' AND schemaname = CURRENT_SCHEMA()
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:63
+[0m[33m[0.389ms] [34;1m[rows:1][0m SELECT * FROM "providers" WHERE "providers"."slug" = 'getir' ORDER BY "providers"."id" LIMIT 1
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:63
+[0m[33m[0.121ms] [34;1m[rows:1][0m SELECT * FROM "providers" WHERE "providers"."slug" = 'yemeksepeti' ORDER BY "providers"."id" LIMIT 1
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:63
+[0m[33m[0.103ms] [34;1m[rows:1][0m SELECT * FROM "providers" WHERE "providers"."slug" = 'trendyol' ORDER BY "providers"."id" LIMIT 1
+
+2026/03/14 19:24:04 [32m/home/mbozkurt/www/me/go-entegra/internal/database/database.go:63
+[0m[33m[0.101ms] [34;1m[rows:1][0m SELECT * FROM "providers" WHERE "providers"."slug" = 'migros' ORDER BY "providers"."id" LIMIT 1
+2026/03/14 19:24:04 Migrations completed.
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /health                   --> main.main.func1 (3 handlers)
+[GIN-debug] GET    /panel/login              --> go-entegra/internal/routes.Setup.func1 (3 handlers)
+[GIN-debug] GET    /panel/register           --> go-entegra/internal/routes.Setup.func2 (3 handlers)
+[GIN-debug] GET    /panel/dashboard          --> go-entegra/internal/routes.Setup.func3 (3 handlers)
+[GIN-debug] GET    /panel/menu               --> go-entegra/internal/routes.Setup.func4 (3 handlers)
+[GIN-debug] GET    /panel/receipt            --> go-entegra/internal/routes.Setup.func5 (3 handlers)
+[GIN-debug] GET    /                         --> go-entegra/internal/routes.Setup.func6 (3 handlers)
+[GIN-debug] POST   /auth/register            --> go-entegra/internal/handlers.(*AuthHandler).Register-fm (3 handlers)
+[GIN-debug] POST   /auth/login               --> go-entegra/internal/handlers.(*AuthHandler).Login-fm (3 handlers)
+[GIN-debug] POST   /webhook/getir/:restaurant_slug --> go-entegra/internal/handlers.(*GetirHandler).IncomingOrder-fm (3 handlers)
+[GIN-debug] POST   /webhook/getir/:restaurant_slug/status --> go-entegra/internal/handlers.(*GetirHandler).IncomingStatusChange-fm (3 handlers)
+[GIN-debug] POST   /webhook/yemeksepeti/:pos_vendor_id --> go-entegra/internal/handlers.(*YemeksepetiHandler).IncomingOrder-fm (3 handlers)
+[GIN-debug] POST   /webhook/trendyol/:restaurant_slug --> go-entegra/internal/handlers.(*TrendyolHandler).IncomingOrder-fm (3 handlers)
+[GIN-debug] POST   /webhook/migros/:restaurant_slug --> go-entegra/internal/handlers.(*MigrosHandler).IncomingOrder-fm (3 handlers)
+[GIN-debug] POST   /webhook/:provider_slug/:restaurant_slug --> go-entegra/internal/handlers.(*OrderHandler).IncomingOrder-fm (3 handlers)
+[GIN-debug] GET    /api/auth/me              --> go-entegra/internal/handlers.(*AuthHandler).Me-fm (4 handlers)
+[GIN-debug] GET    /api/providers            --> go-entegra/internal/handlers.(*ProviderHandler).List-fm (4 handlers)
+[GIN-debug] GET    /api/restaurants          --> go-entegra/internal/handlers.(*RestaurantHandler).List-fm (4 handlers)
+[GIN-debug] POST   /api/restaurants          --> go-entegra/internal/handlers.(*RestaurantHandler).Create-fm (4 handlers)
+[GIN-debug] GET    /api/restaurants/:id      --> go-entegra/internal/handlers.(*RestaurantHandler).Get-fm (4 handlers)
+[GIN-debug] PUT    /api/restaurants/:id      --> go-entegra/internal/handlers.(*RestaurantHandler).Update-fm (4 handlers)
+[GIN-debug] DELETE /api/restaurants/:id      --> go-entegra/internal/handlers.(*RestaurantHandler).Delete-fm (4 handlers)
+[GIN-debug] POST   /api/restaurants/:id/credits --> go-entegra/internal/handlers.(*RestaurantHandler).AddCredits-fm (4 handlers)
+[GIN-debug] GET    /api/restaurants/:id/credit-transactions --> go-entegra/internal/handlers.(*RestaurantHandler).ListCreditTransactions-fm (4 handlers)
+[GIN-debug] GET    /api/restaurants/:id/providers --> go-entegra/internal/handlers.(*RestaurantProviderHandler).List-fm (4 handlers)
+[GIN-debug] POST   /api/restaurants/:id/providers --> go-entegra/internal/handlers.(*RestaurantProviderHandler).Create-fm (4 handlers)
+[GIN-debug] GET    /api/restaurants/:id/providers/:pid --> go-entegra/internal/handlers.(*RestaurantProviderHandler).Get-fm (4 handlers)
+[GIN-debug] PUT    /api/restaurants/:id/providers/:pid --> go-entegra/internal/handlers.(*RestaurantProviderHandler).Update-fm (4 handlers)
+[GIN-debug] DELETE /api/restaurants/:id/providers/:pid --> go-entegra/internal/handlers.(*RestaurantProviderHandler).Delete-fm (4 handlers)
+[GIN-debug] GET    /api/restaurants/:id/orders --> go-entegra/internal/handlers.(*OrderHandler).ListByRestaurant-fm (4 handlers)
+[GIN-debug] GET    /api/orders               --> go-entegra/internal/handlers.(*OrderHandler).List-fm (4 handlers)
+[GIN-debug] GET    /api/orders/:id           --> go-entegra/internal/handlers.(*OrderHandler).Get-fm (4 handlers)
+[GIN-debug] PATCH  /api/orders/:id/status    --> go-entegra/internal/handlers.(*OrderHandler).UpdateStatus-fm (4 handlers)
+[GIN-debug] POST   /api/orders/:id/migros/approve --> go-entegra/internal/handlers.(*MigrosHandler).ApproveOrder-fm (4 handlers)
+[GIN-debug] POST   /api/orders/:id/migros/prepare --> go-entegra/internal/handlers.(*MigrosHandler).PrepareOrder-fm (4 handlers)
+[GIN-debug] POST   /api/orders/:id/migros/deliver --> go-entegra/internal/handlers.(*MigrosHandler).DeliverOrder-fm (4 handlers)
+[GIN-debug] POST   /api/orders/:id/migros/cancel --> go-entegra/internal/handlers.(*MigrosHandler).CancelOrder-fm (4 handlers)
+[GIN-debug] POST   /api/orders/:id/trendyol/approve --> go-entegra/internal/handlers.(*TrendyolHandler).ApproveOrder-fm (4 handlers)
+[GIN-debug] POST   /api/orders/:id/trendyol/prepare --> go-entegra/internal/handlers.(*TrendyolHandler).PrepareOrder-fm (4 handlers)
+[GIN-debug] POST   /api/orders/:id/trendyol/deliver --> go-entegra/internal/handlers.(*TrendyolHandler).DeliverOrder-fm (4 handlers)
+[GIN-debug] POST   /api/orders/:id/trendyol/cancel --> go-entegra/internal/handlers.(*TrendyolHandler).CancelOrder-fm (4 handlers)
+[GIN-debug] POST   /api/orders/:id/getir/approve --> go-entegra/internal/handlers.(*GetirHandler).ApproveOrder-fm (4 handlers)
+[GIN-debug] POST   /api/orders/:id/getir/approve-scheduled --> go-entegra/internal/handlers.(*GetirHandler).ApproveScheduledOrder-fm (4 handlers)
+[GIN-debug] POST   /api/orders/:id/getir/prepare --> go-entegra/internal/handlers.(*GetirHandler).PrepareOrder-fm (4 handlers)
+[GIN-debug] POST   /api/orders/:id/getir/handover --> go-entegra/internal/handlers.(*GetirHandler).HandoverOrder-fm (4 handlers)
+[GIN-debug] POST   /api/orders/:id/getir/deliver --> go-entegra/internal/handlers.(*GetirHandler).DeliverOrder-fm (4 handlers)
+[GIN-debug] POST   /api/orders/:id/getir/cancel --> go-entegra/internal/handlers.(*GetirHandler).CancelOrder-fm (4 handlers)
+[GIN-debug] GET    /api/orders/:id/getir/cancel-options --> go-entegra/internal/handlers.(*GetirHandler).GetCancelOptions-fm (4 handlers)
+[GIN-debug] GET    /api/orders/:id/getir/inquiry --> go-entegra/internal/handlers.(*GetirHandler).InquireOrder-fm (4 handlers)
+[GIN-debug] GET    /api/getir/:integration_id/info --> go-entegra/internal/handlers.(*GetirMenuHandler).GetRestaurantInfo-fm (4 handlers)
+[GIN-debug] PUT    /api/getir/:integration_id/status --> go-entegra/internal/handlers.(*GetirMenuHandler).SetStatus-fm (4 handlers)
+[GIN-debug] PUT    /api/getir/:integration_id/pos-status --> go-entegra/internal/handlers.(*GetirHandler).SetPosStatus-fm (4 handlers)
+[GIN-debug] PUT    /api/getir/:integration_id/busyness --> go-entegra/internal/handlers.(*GetirMenuHandler).SetBusyness-fm (4 handlers)
+[GIN-debug] PUT    /api/getir/:integration_id/courier --> go-entegra/internal/handlers.(*GetirMenuHandler).SetCourier-fm (4 handlers)
+[GIN-debug] GET    /api/getir/:integration_id/working-hours --> go-entegra/internal/handlers.(*GetirMenuHandler).GetWorkingHours-fm (4 handlers)
+[GIN-debug] PUT    /api/getir/:integration_id/working-hours --> go-entegra/internal/handlers.(*GetirMenuHandler).SetWorkingHours-fm (4 handlers)
+[GIN-debug] GET    /api/getir/:integration_id/menu --> go-entegra/internal/handlers.(*GetirMenuHandler).GetMenu-fm (4 handlers)
+[GIN-debug] GET    /api/getir/:integration_id/categories --> go-entegra/internal/handlers.(*GetirMenuHandler).GetCategories-fm (4 handlers)
+[GIN-debug] PUT    /api/getir/:integration_id/products/:product_id/status --> go-entegra/internal/handlers.(*GetirMenuHandler).UpdateProductStatus-fm (4 handlers)
+[GIN-debug] PUT    /api/getir/:integration_id/products/:product_id/price --> go-entegra/internal/handlers.(*GetirMenuHandler).UpdateProductPrice-fm (4 handlers)
+[GIN-debug] PUT    /api/getir/:integration_id/options/:option_id/status --> go-entegra/internal/handlers.(*GetirMenuHandler).UpdateOptionStatus-fm (4 handlers)
+[GIN-debug] GET    /api/getir/:integration_id/chain-menus --> go-entegra/internal/handlers.(*GetirMenuHandler).GetChainMenus-fm (4 handlers)
+[GIN-debug] GET    /api/getir/:integration_id/chain-menus/:chain_menu_id --> go-entegra/internal/handlers.(*GetirMenuHandler).GetChainMenu-fm (4 handlers)
+[GIN-debug] GET    /api/getir/:integration_id/chain-option-categories --> go-entegra/internal/handlers.(*GetirMenuHandler).GetChainOptionCategories-fm (4 handlers)
+[GIN-debug] POST   /api/getir/:integration_id/chain-menus/:chain_menu_id/update-prices --> go-entegra/internal/handlers.(*GetirMenuHandler).UpdateChainMenuPrices-fm (4 handlers)
+[GIN-debug] GET    /api/getir/:integration_id/option-products --> go-entegra/internal/handlers.(*GetirMenuHandler).GetOptionProducts-fm (4 handlers)
+[GIN-debug] GET    /api/getir/:integration_id/all-payment-methods --> go-entegra/internal/handlers.(*GetirMenuHandler).GetAllPaymentMethods-fm (4 handlers)
+[GIN-debug] GET    /api/getir/:integration_id/payment-methods --> go-entegra/internal/handlers.(*GetirMenuHandler).GetPaymentMethods-fm (4 handlers)
+[GIN-debug] POST   /api/getir/:integration_id/payment-methods --> go-entegra/internal/handlers.(*GetirMenuHandler).AddPaymentMethod-fm (4 handlers)
+[GIN-debug] DELETE /api/getir/:integration_id/payment-methods --> go-entegra/internal/handlers.(*GetirMenuHandler).DeletePaymentMethod-fm (4 handlers)
+[GIN-debug] GET    /api/trendyol/:integration_id/info --> go-entegra/internal/handlers.(*TrendyolMenuHandler).GetInfo-fm (4 handlers)
+[GIN-debug] PUT    /api/trendyol/:integration_id/status --> go-entegra/internal/handlers.(*TrendyolMenuHandler).SetStatus-fm (4 handlers)
+[GIN-debug] PUT    /api/trendyol/:integration_id/working-hours --> go-entegra/internal/handlers.(*TrendyolMenuHandler).UpdateWorkingHours-fm (4 handlers)
+[GIN-debug] PUT    /api/trendyol/:integration_id/delivery-time --> go-entegra/internal/handlers.(*TrendyolMenuHandler).UpdateDeliveryTime-fm (4 handlers)
+[GIN-debug] PUT    /api/trendyol/:integration_id/delivery-zones --> go-entegra/internal/handlers.(*TrendyolMenuHandler).UpdateDeliveryZones-fm (4 handlers)
+[GIN-debug] GET    /api/trendyol/:integration_id/menu --> go-entegra/internal/handlers.(*TrendyolMenuHandler).GetMenu-fm (4 handlers)
+[GIN-debug] PUT    /api/trendyol/:integration_id/products/:product_id/status --> go-entegra/internal/handlers.(*TrendyolMenuHandler).UpdateProductStatus-fm (4 handlers)
+[GIN-debug] PUT    /api/trendyol/:integration_id/sections/:section_id/status --> go-entegra/internal/handlers.(*TrendyolMenuHandler).UpdateSectionStatus-fm (4 handlers)
+[GIN-debug] GET    /api/trendyol/:integration_id/batch/:batch_id --> go-entegra/internal/handlers.(*TrendyolMenuHandler).GetBatchStatus-fm (4 handlers)
+[GIN-debug] GET    /api/migros/:integration_id/info --> go-entegra/internal/handlers.(*MigrosHandler).GetInfo-fm (4 handlers)
+[GIN-debug] GET    /api/migros/:integration_id/view-status --> go-entegra/internal/handlers.(*MigrosHandler).GetStoreViewStatus-fm (4 handlers)
+[GIN-debug] PUT    /api/migros/:integration_id/status --> go-entegra/internal/handlers.(*MigrosHandler).SetStatus-fm (4 handlers)
+[GIN-debug] POST   /api/migros/:integration_id/off-date --> go-entegra/internal/handlers.(*MigrosHandler).AddStoreOffDate-fm (4 handlers)
+[GIN-debug] DELETE /api/migros/:integration_id/off-date --> go-entegra/internal/handlers.(*MigrosHandler).RemoveStoreOffDate-fm (4 handlers)
+[GIN-debug] GET    /api/migros/:integration_id/working-hours --> go-entegra/internal/handlers.(*MigrosHandler).GetWorkingHours-fm (4 handlers)
+[GIN-debug] PUT    /api/migros/:integration_id/working-hours --> go-entegra/internal/handlers.(*MigrosHandler).UpdateWorkingHours-fm (4 handlers)
+[GIN-debug] GET    /api/migros/:integration_id/payment-methods --> go-entegra/internal/handlers.(*MigrosHandler).GetPaymentMethods-fm (4 handlers)
+[GIN-debug] PUT    /api/migros/:integration_id/payment-methods --> go-entegra/internal/handlers.(*MigrosHandler).UpdatePaymentMethods-fm (4 handlers)
+[GIN-debug] GET    /api/migros/:integration_id/cancel-reasons --> go-entegra/internal/handlers.(*MigrosHandler).GetCancelReasons-fm (4 handlers)
+[GIN-debug] GET    /api/migros/:integration_id/menu --> go-entegra/internal/handlers.(*MigrosHandler).GetMenu-fm (4 handlers)
+[GIN-debug] PUT    /api/migros/:integration_id/products/:product_id/status --> go-entegra/internal/handlers.(*MigrosHandler).UpdateProductStatus-fm (4 handlers)
+[GIN-debug] PUT    /api/migros/:integration_id/products/:product_id/price --> go-entegra/internal/handlers.(*MigrosHandler).UpdateProductPrice-fm (4 handlers)
+[GIN-debug] PUT    /api/migros/:integration_id/options/:option_id/status --> go-entegra/internal/handlers.(*MigrosHandler).UpdateOptionStatus-fm (4 handlers)
+[GIN-debug] GET    /api/yemeksepeti/:integration_id/status --> go-entegra/internal/handlers.(*YemeksepetiHandler).GetStatus-fm (4 handlers)
+[GIN-debug] PUT    /api/yemeksepeti/:integration_id/status --> go-entegra/internal/handlers.(*YemeksepetiHandler).SetStatus-fm (4 handlers)
+[GIN-debug] POST   /api/yemeksepeti/:integration_id/orders/:order_token/accept --> go-entegra/internal/handlers.(*YemeksepetiHandler).AcceptOrder-fm (4 handlers)
+[GIN-debug] POST   /api/yemeksepeti/:integration_id/orders/:order_token/reject --> go-entegra/internal/handlers.(*YemeksepetiHandler).RejectOrder-fm (4 handlers)
+[GIN-debug] POST   /api/yemeksepeti/:integration_id/orders/:order_token/pickup --> go-entegra/internal/handlers.(*YemeksepetiHandler).PickupOrder-fm (4 handlers)
+[GIN-debug] POST   /api/yemeksepeti/:integration_id/orders/:order_token/prepared --> go-entegra/internal/handlers.(*YemeksepetiHandler).PreparationCompleted-fm (4 handlers)
+2026/03/14 19:24:04 Server starting on :8080 (env: development)
+[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
+[GIN-debug] Listening and serving HTTP on :8080
+[GIN] 2026/03/14 - 19:24:12 | 302 |     107.479µs |             ::1 | GET      "/"

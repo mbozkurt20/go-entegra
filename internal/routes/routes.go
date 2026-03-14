@@ -22,8 +22,8 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtExpireHours int) {
 	getirHandler        := handlers.NewGetirHandler(db, webhookSvc)
 	getirMenuHandler    := handlers.NewGetirMenuHandler(db)
 	trendyolMenuHandler := handlers.NewTrendyolMenuHandler(db)
-	trendyolHandler    := handlers.NewTrendyolHandler(db)
-	migrosHandler        := handlers.NewMigrosHandler(db)
+	trendyolHandler    := handlers.NewTrendyolHandler(db, webhookSvc)
+	migrosHandler        := handlers.NewMigrosHandler(db, webhookSvc)
 	ysHandler            := handlers.NewYemeksepetiHandler(db, webhookSvc)
 
 	// Panel (frontend HTML)
@@ -49,6 +49,10 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtExpireHours int) {
 	r.POST("/webhook/getir/:restaurant_slug/status", getirHandler.IncomingStatusChange)
 	// Public: YemekSepeti (DH) webhook — posVendorId ile
 	r.POST("/webhook/yemeksepeti/:pos_vendor_id", ysHandler.IncomingOrder)
+	// Public: Trendyol webhook
+	r.POST("/webhook/trendyol/:restaurant_slug", trendyolHandler.IncomingOrder)
+	// Public: Migros webhook
+	r.POST("/webhook/migros/:restaurant_slug", migrosHandler.IncomingOrder)
 	// Public: Diğer pazaryeri webhook'ları
 	r.POST("/webhook/:provider_slug/:restaurant_slug", orderHandler.IncomingOrder)
 
@@ -87,6 +91,10 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtExpireHours int) {
 			orders.GET("",               orderHandler.List)
 			orders.GET("/:id",           orderHandler.Get)
 			orders.PATCH("/:id/status",  orderHandler.UpdateStatus)
+			orders.POST("/:id/migros/approve",            migrosHandler.ApproveOrder)
+			orders.POST("/:id/migros/prepare",            migrosHandler.PrepareOrder)
+			orders.POST("/:id/migros/deliver",            migrosHandler.DeliverOrder)
+			orders.POST("/:id/migros/cancel",             migrosHandler.CancelOrder)
 			orders.POST("/:id/trendyol/approve",          trendyolHandler.ApproveOrder)
 			orders.POST("/:id/trendyol/prepare",          trendyolHandler.PrepareOrder)
 			orders.POST("/:id/trendyol/deliver",          trendyolHandler.DeliverOrder)
@@ -130,19 +138,35 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtExpireHours int) {
 		// Trendyol — menü ve restoran yönetimi (integration_id = restaurant_provider.id)
 		trendyol := api.Group("/trendyol/:integration_id")
 		{
-			trendyol.PUT("/status",                        trendyolMenuHandler.SetStatus)
-			trendyol.GET("/menu",                          trendyolMenuHandler.GetMenu)
-			trendyol.PUT("/products/:product_id/status",   trendyolMenuHandler.UpdateProductStatus)
-			trendyol.PUT("/products/:product_id/price",    trendyolMenuHandler.UpdateProductPrice)
+			trendyol.GET("/info",                             trendyolMenuHandler.GetInfo)
+			trendyol.PUT("/status",                           trendyolMenuHandler.SetStatus)
+			trendyol.PUT("/working-hours",                    trendyolMenuHandler.UpdateWorkingHours)
+			trendyol.PUT("/delivery-time",                    trendyolMenuHandler.UpdateDeliveryTime)
+			trendyol.PUT("/delivery-zones",                   trendyolMenuHandler.UpdateDeliveryZones)
+			trendyol.GET("/menu",                             trendyolMenuHandler.GetMenu)
+			trendyol.PUT("/products/:product_id/status",      trendyolMenuHandler.UpdateProductStatus)
+			// trendyol.PUT("/products/:product_id/price", ...) // devre dışı — 404 hatası veriyor
+			trendyol.PUT("/sections/:section_id/status",      trendyolMenuHandler.UpdateSectionStatus)
+			trendyol.GET("/batch/:batch_id",                  trendyolMenuHandler.GetBatchStatus)
 		}
 
 		// Migros — menü ve mağaza yönetimi (integration_id = restaurant_provider.id)
 		migros := api.Group("/migros/:integration_id")
 		{
+			migros.GET("/info",                          migrosHandler.GetInfo)
+			migros.GET("/view-status",                   migrosHandler.GetStoreViewStatus)
 			migros.PUT("/status",                        migrosHandler.SetStatus)
+			migros.POST("/off-date",                     migrosHandler.AddStoreOffDate)
+			migros.DELETE("/off-date",                   migrosHandler.RemoveStoreOffDate)
+			migros.GET("/working-hours",                 migrosHandler.GetWorkingHours)
+			migros.PUT("/working-hours",                 migrosHandler.UpdateWorkingHours)
+			migros.GET("/payment-methods",               migrosHandler.GetPaymentMethods)
+			migros.PUT("/payment-methods",               migrosHandler.UpdatePaymentMethods)
+			migros.GET("/cancel-reasons",                migrosHandler.GetCancelReasons)
 			migros.GET("/menu",                          migrosHandler.GetMenu)
 			migros.PUT("/products/:product_id/status",   migrosHandler.UpdateProductStatus)
 			migros.PUT("/products/:product_id/price",    migrosHandler.UpdateProductPrice)
+			migros.PUT("/options/:option_id/status",     migrosHandler.UpdateOptionStatus)
 		}
 
 		// YemekSepeti (DH) — restoran yönetimi (integration_id = restaurant_provider.id)

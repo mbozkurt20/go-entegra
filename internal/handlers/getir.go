@@ -53,14 +53,17 @@ func (h *GetirHandler) findGetirRP(c *gin.Context, restaurantSlug string) (*mode
 // POST /webhook/getir/:restaurant_slug
 func (h *GetirHandler) IncomingOrder(c *gin.Context) {
 	restaurantSlug := c.Param("restaurant_slug")
+	log.Printf("[GETIR] [WEBHOOK] Yeni sipariş isteği alındı | restaurant=%s | ip=%s", restaurantSlug, c.ClientIP())
 
 	rp, ok := h.findGetirRP(c, restaurantSlug)
 	if !ok {
+		log.Printf("[GETIR] [WEBHOOK] Entegrasyon bulunamadı | restaurant=%s", restaurantSlug)
 		return
 	}
 
 	var payload getirSvc.IncomingOrder
 	if err := c.ShouldBindJSON(&payload); err != nil {
+		log.Printf("[GETIR] [WEBHOOK] Geçersiz payload | restaurant=%s | hata=%v", restaurantSlug, err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz payload"})
 		return
 	}
@@ -102,9 +105,13 @@ func (h *GetirHandler) IncomingOrder(c *gin.Context) {
 	}
 
 	if err := h.db.Create(&order).Error; err != nil {
+		log.Printf("[GETIR] [WEBHOOK] Sipariş kaydedilemedi | restaurant=%s | provider_order_id=%s | hata=%v", restaurantSlug, payload.ID, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Sipariş kaydedilemedi"})
 		return
 	}
+
+	log.Printf("[GETIR] [WEBHOOK] Sipariş kaydedildi | order_id=%d | provider_order_id=%s | restaurant=%s | müşteri=%s | tutar=%.2f₺ | durum=%s | aktif=%v",
+		order.ID, payload.ID, restaurantSlug, order.CustomerName, order.TotalAmount, order.Status, active)
 
 	// Kontör tüketim hareketi
 	if active && !rp.Restaurant.Business.IsSuper {
@@ -141,6 +148,7 @@ func (h *GetirHandler) IncomingOrder(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Sipariş alındı", "order_id": order.ID})
+	log.Printf("[GETIR] [WEBHOOK] Tamamlandı | order_id=%d | provider_order_id=%s", order.ID, payload.ID)
 }
 
 // ApproveOrder panelden manuel sipariş onayı (Getir API'sine bildirir)
@@ -161,12 +169,14 @@ func (h *GetirHandler) ApproveOrder(c *gin.Context) {
 	}
 
 	if err := client.ApproveOrder(order.ProviderOrderID); err != nil {
+		log.Printf("[GETIR] [ONAY] Getir API hatası | order_id=%s | provider_order_id=%s | hata=%v", orderID, order.ProviderOrderID, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	order.Status = models.OrderStatusApproved
 	h.db.Save(&order)
+	log.Printf("[GETIR] [ONAY] Sipariş onaylandı | order_id=%s | provider_order_id=%s", orderID, order.ProviderOrderID)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Sipariş Getir'de onaylandı", "data": order})
 }
@@ -189,12 +199,14 @@ func (h *GetirHandler) PrepareOrder(c *gin.Context) {
 	}
 
 	if err := client.PrepareOrder(order.ProviderOrderID); err != nil {
+		log.Printf("[GETIR] [HAZIRLAMA] Getir API hatası | order_id=%s | hata=%v", orderID, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	order.Status = models.OrderStatusPreparing
 	h.db.Save(&order)
+	log.Printf("[GETIR] [HAZIRLAMA] Sipariş hazırlanıyor | order_id=%s | provider_order_id=%s", orderID, order.ProviderOrderID)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Sipariş hazırlanıyor", "data": order})
 }
@@ -217,12 +229,14 @@ func (h *GetirHandler) HandoverOrder(c *gin.Context) {
 	}
 
 	if err := client.HandoverOrder(order.ProviderOrderID); err != nil {
+		log.Printf("[GETIR] [KURYE] Getir API hatası | order_id=%s | hata=%v", orderID, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	order.Status = models.OrderStatusReady
 	h.db.Save(&order)
+	log.Printf("[GETIR] [KURYE] Sipariş kuryeye teslim edildi | order_id=%s | provider_order_id=%s", orderID, order.ProviderOrderID)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Sipariş kuryeye teslim edildi", "data": order})
 }
@@ -245,12 +259,14 @@ func (h *GetirHandler) DeliverOrder(c *gin.Context) {
 	}
 
 	if err := client.DeliverOrder(order.ProviderOrderID); err != nil {
+		log.Printf("[GETIR] [TESLİMAT] Getir API hatası | order_id=%s | hata=%v", orderID, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	order.Status = models.OrderStatusDelivered
 	h.db.Save(&order)
+	log.Printf("[GETIR] [TESLİMAT] Sipariş teslim edildi | order_id=%s | provider_order_id=%s", orderID, order.ProviderOrderID)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Sipariş müşteriye teslim edildi", "data": order})
 }
@@ -279,12 +295,14 @@ func (h *GetirHandler) CancelOrder(c *gin.Context) {
 	}
 
 	if err := client.CancelOrder(order.ProviderOrderID, req.ReasonID, req.Note); err != nil {
+		log.Printf("[GETIR] [İPTAL] Getir API hatası | order_id=%s | hata=%v", orderID, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	order.Status = models.OrderStatusCancelled
 	h.db.Save(&order)
+	log.Printf("[GETIR] [İPTAL] Sipariş iptal edildi | order_id=%s | provider_order_id=%s | neden_id=%d", orderID, order.ProviderOrderID, req.ReasonID)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Sipariş Getir'de iptal edildi", "data": order})
 }
@@ -330,6 +348,7 @@ func (h *GetirHandler) SetStatus(c *gin.Context) {
 // POST /webhook/getir/:restaurant_slug/status
 func (h *GetirHandler) IncomingStatusChange(c *gin.Context) {
 	restaurantSlug := c.Param("restaurant_slug")
+	log.Printf("[GETIR] [STATÜ-WEBHOOK] Statü bildirimi alındı | restaurant=%s | ip=%s", restaurantSlug, c.ClientIP())
 
 	rp, ok := h.findGetirRP(c, restaurantSlug)
 	if !ok {
@@ -338,16 +357,21 @@ func (h *GetirHandler) IncomingStatusChange(c *gin.Context) {
 
 	var payload getirSvc.IncomingStatusChange
 	if err := c.ShouldBindJSON(&payload); err != nil {
+		log.Printf("[GETIR] [STATÜ-WEBHOOK] Geçersiz payload | restaurant=%s | hata=%v", restaurantSlug, err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz payload"})
 		return
 	}
 
+	log.Printf("[GETIR] [STATÜ-WEBHOOK] Statü: %s | provider_order_id=%s", payload.Status, payload.ID)
+
 	var order models.Order
 	if err := h.db.Where("provider_order_id = ? AND restaurant_provider_id = ?", payload.ID, rp.ID).First(&order).Error; err != nil {
+		log.Printf("[GETIR] [STATÜ-WEBHOOK] Sipariş bulunamadı | provider_order_id=%s", payload.ID)
 		c.JSON(http.StatusNotFound, gin.H{"error": "Sipariş bulunamadı"})
 		return
 	}
 
+	oldStatus := order.Status
 	switch payload.Status {
 	case "Cancelled":
 		order.Status = models.OrderStatusCancelled
@@ -358,6 +382,7 @@ func (h *GetirHandler) IncomingStatusChange(c *gin.Context) {
 	}
 
 	h.db.Save(&order)
+	log.Printf("[GETIR] [STATÜ-WEBHOOK] Güncellendi | order_id=%d | %s → %s", order.ID, oldStatus, order.Status)
 	c.JSON(http.StatusOK, gin.H{"message": "Statü güncellendi"})
 }
 

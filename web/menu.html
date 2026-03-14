@@ -45,6 +45,15 @@
     <p id="loadingText" class="text-sm">Menü yükleniyor...</p>
   </div>
 
+  <!-- Trendyol: Kategori Yönetimi -->
+  <div id="sectionPanel" class="hidden mb-5">
+    <div class="flex items-center justify-between mb-3">
+      <p class="text-sm font-semibold text-gray-200">Kategori Yönetimi</p>
+      <p class="text-xs text-gray-500">Pasif kategorilerin ürünleri listelenmez</p>
+    </div>
+    <div id="sectionList" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2"></div>
+  </div>
+
   <!-- Categories Filter -->
   <div id="categoryFilter" class="hidden flex gap-2 mb-5 flex-wrap"></div>
 
@@ -107,6 +116,8 @@ document.getElementById('headerProviderTitle').textContent = providerLabel + ' M
 document.getElementById('loadingText').textContent = providerLabel + ' menüsü yükleniyor...';
 
 let allProducts = [];
+let allSections = [];
+let rawProdMap = {};
 let isOpen = false;
 let editingProductId = null;
 
@@ -174,16 +185,15 @@ function normalizeProducts(data) {
   if (provider === 'trendyol') {
     // Trendyol: { products:[...], sections:[{ id, name, status, products:[{id,position}] }] }
     const allProds = data?.products || [];
-    const sections = data?.sections || [];
-    const prodMap = {};
-    allProds.forEach(p => { prodMap[p.id] = p; });
+    allSections = data?.sections || [];
+    rawProdMap = {};
+    allProds.forEach(p => { rawProdMap[p.id] = p; });
 
     const result = [];
-    if (sections.length > 0) {
-      sections.forEach(sec => {
-        if (sec.status === 'PASSIVE') return;
+    if (allSections.length > 0) {
+      allSections.forEach(sec => {
         (sec.products || []).forEach(ref => {
-          const p = prodMap[ref.id];
+          const p = rawProdMap[ref.id];
           if (!p) return;
           result.push({
             id: String(p.id),
@@ -192,6 +202,7 @@ function normalizeProducts(data) {
             price: p.sellingPrice ?? p.originalPrice ?? 0,
             isAvailable: p.status !== 'PASSIVE',
             imageUrl: '',
+            sectionActive: sec.status !== 'PASSIVE',
             category: { id: String(sec.id), name: sec.name || '' }
           });
         });
@@ -205,6 +216,7 @@ function normalizeProducts(data) {
           price: p.sellingPrice ?? p.originalPrice ?? 0,
           isAvailable: p.status !== 'PASSIVE',
           imageUrl: '',
+          sectionActive: true,
           category: { id: '0', name: 'Ürünler' }
         });
       });
@@ -261,20 +273,24 @@ async function loadMenu() {
     return;
   }
 
+  if (provider === 'trendyol' && allSections.length > 0) renderSections();
   renderCategoryFilter();
-  renderProducts(allProducts);
+  renderProducts(allProducts.filter(p => p.sectionActive !== false));
+}
+
+function visibleProducts() {
+  return allProducts.filter(p => p.sectionActive !== false);
 }
 
 function renderCategoryFilter() {
+  const visible = visibleProducts();
   const cats = {};
-  allProducts.forEach(p => {
-    if (p.category) cats[p.category.id] = p.category.name;
-  });
+  visible.forEach(p => { if (p.category) cats[p.category.id] = p.category.name; });
 
   const el = document.getElementById('categoryFilter');
-  el.innerHTML = `<button class="cat-btn active" onclick="filterByCategory('')">Tümü (${allProducts.length})</button>` +
+  el.innerHTML = `<button class="cat-btn active" onclick="filterByCategory('')">Tümü (${visible.length})</button>` +
     Object.entries(cats).map(([id, name]) => {
-      const count = allProducts.filter(p => p.category?.id === id).length;
+      const count = visible.filter(p => p.category?.id === id).length;
       return `<button class="cat-btn" onclick="filterByCategory('${id}')">${name} (${count})</button>`;
     }).join('');
   el.classList.remove('hidden');
@@ -283,8 +299,60 @@ function renderCategoryFilter() {
 function filterByCategory(catId) {
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
   event.target.classList.add('active');
-  const filtered = catId ? allProducts.filter(p => p.category?.id === catId) : allProducts;
+  const base = visibleProducts();
+  const filtered = catId ? base.filter(p => p.category?.id === catId) : base;
   renderProducts(filtered);
+}
+
+function renderSections() {
+  const el = document.getElementById('sectionList');
+  el.innerHTML = allSections.map(sec => {
+    const active = sec.status !== 'PASSIVE';
+    return `
+      <div class="flex items-center justify-between bg-gray-900 border border-gray-800 rounded-lg px-3 py-2.5">
+        <span class="text-xs font-medium truncate mr-2 ${active ? 'text-white' : 'text-gray-500'}">${sec.name}</span>
+        <button onclick="toggleSection('${sec.id}', ${active})" id="secbtn-${sec.id}"
+          role="switch" aria-checked="${active}"
+          class="shrink-0 relative inline-flex h-5 w-9 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${active ? 'bg-green-500' : 'bg-gray-600'}"
+          title="${active ? 'Pasife al' : 'Aktife al'}">
+          <span class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform duration-200 ${active ? 'translate-x-4' : 'translate-x-0'}"></span>
+        </button>
+      </div>`;
+  }).join('');
+  document.getElementById('sectionPanel').classList.remove('hidden');
+}
+
+async function toggleSection(sectionId, currentActive) {
+  const newActive = !currentActive;
+  const data = await api(`/api/trendyol/${integrationId}/sections/${sectionId}/status`, {
+    method: 'PUT',
+    body: JSON.stringify({ is_available: newActive })
+  });
+  if (data?.error) { showError(data.error); return; }
+
+  // Yerel state güncelle
+  const sec = allSections.find(s => String(s.id) === String(sectionId));
+  if (sec) sec.status = newActive ? 'ACTIVE' : 'PASSIVE';
+  allProducts = allProducts.map(p =>
+    p.category?.id === String(sectionId) ? { ...p, sectionActive: newActive } : p
+  );
+
+  // Butonu güncelle
+  const btn = document.getElementById('secbtn-' + sectionId);
+  if (btn) {
+    btn.setAttribute('aria-checked', newActive);
+    btn.className = btn.className.replace(newActive ? 'bg-gray-600' : 'bg-green-500', newActive ? 'bg-green-500' : 'bg-gray-600');
+    btn.querySelector('span').className = btn.querySelector('span').className.replace(
+      newActive ? 'translate-x-0' : 'translate-x-4',
+      newActive ? 'translate-x-4' : 'translate-x-0'
+    );
+    btn.title = newActive ? 'Pasife al' : 'Aktife al';
+    const nameEl = btn.previousElementSibling;
+    if (nameEl) nameEl.className = `text-xs font-medium truncate mr-2 ${newActive ? 'text-white' : 'text-gray-500'}`;
+  }
+
+  renderCategoryFilter();
+  renderProducts(visibleProducts());
 }
 
 function renderProducts(products) {
@@ -313,7 +381,7 @@ function renderProducts(products) {
             <p class="text-sm font-bold text-white">₺${p.price.toFixed(2)}</p>
             <p class="status-txt text-xs ${p.isAvailable ? 'text-green-400' : 'text-gray-500'}">${p.isAvailable ? 'Satışta' : 'Pasif'}</p>
           </div>
-          ${provider !== 'getir' ? `<button onclick="openPriceModal('${p.id}', '${p.name.replace(/'/g,"\\'")}', ${p.price})"
+          ${provider === 'migros' ? `<button onclick="openPriceModal('${p.id}', '${p.name.replace(/'/g,"\\'")}', ${p.price})"
             class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded-lg transition">
             Fiyat Düzenle
           </button>` : ''}
@@ -408,6 +476,7 @@ document.getElementById('newPrice').addEventListener('keydown', e => {
 
 // Init
 setStatusUI(false);
+if (provider !== 'trendyol') document.getElementById('sectionPanel').remove();
 loadMenu();
 </script>
 </body>
