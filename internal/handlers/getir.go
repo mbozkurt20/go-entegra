@@ -3,6 +3,7 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	getirSvc "go-entegra/internal/services/getir"
 	"go-entegra/internal/models"
@@ -28,7 +29,7 @@ func (h *GetirHandler) findGetirRP(c *gin.Context, restaurantSlug string) (*mode
 		Joins("JOIN restaurants ON restaurants.id = restaurant_providers.restaurant_id").
 		Joins("JOIN providers ON providers.id = restaurant_providers.provider_id").
 		Where("providers.slug = 'getir' AND restaurants.slug = ? AND restaurant_providers.status = '1'", restaurantSlug).
-		Preload("Restaurant").
+		Preload("Restaurant.Business").
 		Preload("Provider").
 		First(&rp).Error
 
@@ -64,8 +65,20 @@ func (h *GetirHandler) IncomingOrder(c *gin.Context) {
 		return
 	}
 
+	// Kontör kontrolü: is_super değilse ve kontör 0 ise sipariş pasif kaydedilir
+	active := true
+	newBalance := rp.Restaurant.Credits
+	if !rp.Restaurant.Business.IsSuper {
+		if rp.Restaurant.Credits <= 0 {
+			active = false
+		} else {
+			h.db.Model(&rp.Restaurant).UpdateColumn("credits", gorm.Expr("credits - 1"))
+			newBalance = rp.Restaurant.Credits - 1
+		}
+	}
+
 	status := models.OrderStatusPending
-	if rp.AutoApprove == "1" {
+	if active && rp.AutoApprove == "1" {
 		status = models.OrderStatusApproved
 	}
 
@@ -74,6 +87,7 @@ func (h *GetirHandler) IncomingOrder(c *gin.Context) {
 		RestaurantProviderID: rp.ID,
 		ProviderOrderID:      payload.ID,
 		Status:               status,
+		Active:               active,
 		RawPayload:           models.JSONMap(map[string]interface{}{"order": payload}),
 		TotalAmount:          payload.TotalPrice,
 		DiscountAmount:       payload.DiscountAmount,
@@ -92,23 +106,38 @@ func (h *GetirHandler) IncomingOrder(c *gin.Context) {
 		return
 	}
 
-	// Otomatik onay: Getir API'sine de bildir
-	if rp.AutoApprove == "1" && payload.ID != "" {
-		go func() {
-			client, err := getirSvc.NewClientFromInfo(map[string]interface{}(rp.Information), rp.Service)
-			if err != nil {
-				log.Printf("Getir client oluşturulamadı: %v", err)
-				return
-			}
-			if err := client.ApproveOrder(payload.ID); err != nil {
-				log.Printf("Getir otomatik onay başarısız (order: %s): %v", payload.ID, err)
-			}
-		}()
+	// Kontör tüketim hareketi
+	if active && !rp.Restaurant.Business.IsSuper {
+		orderID := order.ID
+		h.db.Create(&models.CreditTransaction{
+			RestaurantID: rp.RestaurantID,
+			Amount:       -1,
+			Balance:      newBalance,
+			Type:         models.CreditTxUse,
+			Source:       models.CreditSrcOrder,
+			Description:  "Sipariş #" + strconv.Itoa(int(order.ID)),
+			OrderID:      &orderID,
+		})
 	}
 
-	// Restoran webhook'una gönder
-	if rp.Restaurant.WebhookURL != "" {
-		go h.webhook.SendOrder(&order, rp.Restaurant.WebhookURL)
+	// Aktif sipariş ise: otomatik onay ve webhook
+	if active {
+		if rp.AutoApprove == "1" && payload.ID != "" {
+			go func() {
+				client, err := getirSvc.NewClientFromInfo(map[string]interface{}(rp.Information), rp.Service)
+				if err != nil {
+					log.Printf("Getir client oluşturulamadı: %v", err)
+					return
+				}
+				if err := client.ApproveOrder(payload.ID); err != nil {
+					log.Printf("Getir otomatik onay başarısız (order: %s): %v", payload.ID, err)
+				}
+			}()
+		}
+
+		if rp.Restaurant.WebhookURL != "" {
+			go h.webhook.SendOrder(&order, rp.Restaurant.WebhookURL)
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Sipariş alındı", "order_id": order.ID})

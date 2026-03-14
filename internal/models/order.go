@@ -34,6 +34,7 @@ type Order struct {
 	PaymentMethod        string         `json:"payment_method"`         // Ödeme yöntemi
 	VerificationCode     string         `json:"verification_code"`      // Sipariş doğrulama kodu
 	ScheduledAt          *time.Time     `json:"scheduled_at"`           // İleri tarihli sipariş
+	Active               bool           `gorm:"default:true" json:"active"`
 	WebhookSent          bool           `gorm:"default:false" json:"webhook_sent"`
 	WebhookSentAt        *time.Time     `json:"webhook_sent_at"`
 	CreatedAt            time.Time      `json:"created_at"`

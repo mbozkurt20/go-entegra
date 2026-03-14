@@ -13,6 +13,7 @@ type Business struct {
 	Password  string         `gorm:"not null" json:"-"`
 	Phone     string         `json:"phone"`
 	Status    string         `gorm:"default:active" json:"status"`
+	IsSuper   bool           `gorm:"default:false" json:"is_super"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`

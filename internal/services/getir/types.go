@@ -246,11 +246,41 @@ type ChainOption struct {
 }
 
 type UpdateChainPricesRequest struct {
-	ChainProducts []ChainPriceItem `json:"chainProducts"`
-	ChainOptions  []ChainPriceItem `json:"chainOptions"`
+	ChainProducts []ChainProductPriceItem `json:"chainProducts"`
+	ChainOptions  []ChainOptionPriceItem  `json:"chainOptions"`
 }
 
-type ChainPriceItem struct {
-	ID    string  `json:"id"`
-	Price float64 `json:"price"`
+type ChainProductPriceItem struct {
+	ChainProductOID string  `json:"chainProductOID"`
+	Price           float64 `json:"price"`
+}
+
+type ChainOptionPriceItem struct {
+	ChainOptionOID string  `json:"chainOptionOID"`
+	Price          float64 `json:"price"`
+}
+
+// --- Ödeme Yöntemleri ---
+
+type PaymentMethod struct {
+	ID            string        `json:"id"`
+	Name          LocalizedName `json:"name"`
+	Icon          string        `json:"icon"`
+	PaymentGroup  int           `json:"paymentGroup"`
+	DeliveryTypes []int         `json:"deliveryTypes"`
+	Type          int           `json:"type"`
+	Active        bool          `json:"active"`
+	Text          LocalizedName `json:"text"`
+}
+
+type PaymentMethodRequest struct {
+	PaymentMethodID string `json:"paymentMethodId"`
+}
+
+// --- Opsiyon Ürünler ---
+
+type OptionProduct struct {
+	ID    string        `json:"id"`
+	Name  LocalizedName `json:"name"`
+	Price float64       `json:"price"`
 }

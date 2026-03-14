@@ -15,6 +15,7 @@ type Restaurant struct {
 	Address     string         `json:"address"`
 	WebhookURL  string         `json:"webhook_url"`
 	Status      string         `gorm:"default:active" json:"status"`
+	Credits     int            `gorm:"default:0" json:"credits"`
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`

@@ -14,6 +14,7 @@
   <div class="p-5 border-b border-gray-800">
     <h1 class="text-sm font-bold text-white">Entegra Panel</h1>
     <p id="businessName" class="text-xs text-gray-400 mt-0.5 truncate"></p>
+    <span id="superBadge" style="display:none" class="mt-1 inline-flex items-center gap-1 text-xs bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-0.5 rounded-full">⚡ Super</span>
   </div>
   <nav class="flex-1 p-3 space-y-0.5">
     <button onclick="showPage('dashboard')"    id="nav-dashboard"    class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-left">
@@ -33,7 +34,11 @@
       Pazaryerleri
     </button>
   </nav>
-  <div class="p-3 border-t border-gray-800">
+  <div class="p-3 border-t border-gray-800 space-y-0.5">
+    <button onclick="toggleTheme()" id="themeToggleBtn" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-800 transition">
+      <span id="themeIcon" class="w-4 h-4 shrink-0 flex items-center justify-center text-base leading-none">☀️</span>
+      <span id="themeLabel">Açık Mod</span>
+    </button>
     <button onclick="logout()" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/10 transition">
       <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
       Çıkış Yap
@@ -87,7 +92,7 @@
     <!-- Restaurant Cards -->
     <div class="flex items-center justify-between mb-3">
       <p class="text-sm font-semibold text-gray-300">Restoranlar</p>
-      <button onclick="openModal('restaurantModal')" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg transition">+ Restoran Ekle</button>
+      <button onclick="openRestaurantModal()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg transition">+ Restoran Ekle</button>
     </div>
     <div id="dashRestaurantGrid" class="grid grid-cols-3 gap-3"></div>
   </div>
@@ -99,7 +104,7 @@
         <h2 class="text-lg font-semibold">Restoranlar</h2>
         <p class="text-xs text-gray-400 mt-0.5">Restoranlarınızı buradan yönetin</p>
       </div>
-      <button onclick="openModal('restaurantModal')" class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition">+ Restoran Ekle</button>
+      <button onclick="openRestaurantModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition">+ Restoran Ekle</button>
     </div>
     <div id="restaurantGrid" class="grid grid-cols-3 gap-4"></div>
   </div>
@@ -114,7 +119,11 @@
         <h2 id="detailRestaurantName" class="text-lg font-semibold"></h2>
         <span id="detailRestaurantStatus" class="text-xs px-2 py-0.5 rounded-full"></span>
       </div>
-      <div class="ml-auto flex gap-2">
+      <div class="ml-auto flex items-center gap-2">
+        <div id="creditsBox" class="flex items-center gap-1.5 border border-gray-700 rounded-lg px-2.5 py-1.5">
+          <span class="text-xs text-gray-400">Kontör:</span>
+          <span id="detailCredits" class="text-xs font-semibold text-indigo-400">0</span>
+        </div>
         <button id="detailDeleteBtn" onclick="deleteCurrentRestaurant()" class="text-xs text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-400/50 px-3 py-1.5 rounded-lg transition">Sil</button>
       </div>
     </div>
@@ -123,6 +132,7 @@
     <div class="flex gap-1 mb-5 border-b border-gray-800 pb-0">
       <button onclick="switchDetailTab('orders')"       id="dtab-orders"       class="detail-tab px-4 py-2 text-sm font-medium border-b-2 -mb-px transition">Siparişler</button>
       <button onclick="switchDetailTab('integrations')" id="dtab-integrations" class="detail-tab px-4 py-2 text-sm font-medium border-b-2 -mb-px transition">Entegrasyonlar</button>
+      <button onclick="switchDetailTab('credits')"      id="dtab-credits"      class="detail-tab px-4 py-2 text-sm font-medium border-b-2 -mb-px transition">Kontörler</button>
     </div>
 
     <!-- Tab: Siparişler -->
@@ -141,6 +151,34 @@
     <!-- Tab: Entegrasyonlar -->
     <div id="dtab-integrations-content" class="hidden">
       <div id="detailIntegrationGrid" class="grid grid-cols-4 gap-3"></div>
+    </div>
+
+    <!-- Tab: Kontörler -->
+    <div id="dtab-credits-content" class="hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Sol: Bakiye + ekleme -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <p class="text-sm font-semibold mb-4">Kontör Yönetimi</p>
+          <div id="detailCreditsStatus" class="mb-5"></div>
+          <div id="detailCreditsAddSection">
+            <label class="lbl">Kontör Ekle</label>
+            <div class="flex items-center gap-2">
+              <input id="detailCreditsInput" type="number" min="1" value="100"
+                class="inp flex-1 text-sm"
+                placeholder="Miktar">
+              <button onclick="addCreditsFromDetail()"
+                class="btn-pri text-sm px-4 whitespace-nowrap">+ Ekle</button>
+            </div>
+          </div>
+        </div>
+        <!-- Sağ: Hareket geçmişi -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <p class="text-sm font-semibold mb-4">Hareket Geçmişi</p>
+          <div id="detailTxList" class="space-y-2 max-h-80 overflow-y-auto">
+            <p class="text-xs text-gray-500">Yükleniyor...</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -280,14 +318,37 @@
       </div>
     </div>
 
-    <!-- Çalışma Saatleri -->
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
-      <div class="flex items-center justify-between mb-4">
-        <p class="text-sm font-semibold">Çalışma Saatleri</p>
-        <button onclick="saveGetirWorkingHours()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg transition">Kaydet</button>
+    <!-- Çalışma Saatleri + Ödeme Yöntemleri -->
+    <div class="grid grid-cols-2 gap-4">
+      <!-- Çalışma Saatleri -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-sm font-semibold">Çalışma Saatleri</p>
+          <button onclick="saveGetirWorkingHours()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg transition">Kaydet</button>
+        </div>
+        <div id="getirWorkingHoursGrid" class="space-y-2">
+          <p class="text-xs text-gray-600">Yükleniyor...</p>
+        </div>
       </div>
-      <div id="getirWorkingHoursGrid" class="space-y-2">
-        <p class="text-xs text-gray-600">Yükleniyor...</p>
+
+      <!-- Ödeme Yöntemleri -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-sm font-semibold">Ödeme Yöntemleri</p>
+          <button onclick="loadGetirPaymentMethods(true)" class="text-xs text-gray-400 hover:text-white transition">↻ Yenile</button>
+        </div>
+        <div id="getirPaymentMethodsList" class="space-y-2 mb-4">
+          <p class="text-xs text-gray-600">Yükleniyor...</p>
+        </div>
+        <div class="border-t border-gray-800 pt-3">
+          <p class="text-xs text-gray-500 mb-2">Yöntem Ekle</p>
+          <div class="flex gap-2">
+            <select id="getirPaymentMethodSelect" class="inp text-xs flex-1">
+              <option value="">— Seçiniz —</option>
+            </select>
+            <button onclick="addGetirPaymentMethod()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg transition shrink-0">Ekle</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -296,6 +357,25 @@
 
 <!-- Toast Container -->
 <div id="toastContainer" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+<!-- ===== MODAL: Confirm ===== -->
+<div id="confirmModal" class="modal-overlay hidden">
+  <div class="modal-box w-full max-w-sm">
+    <div class="flex items-start gap-3 mb-5">
+      <div class="w-9 h-9 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0 mt-0.5">
+        <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+      </div>
+      <div>
+        <h3 id="confirmTitle" class="font-semibold text-sm text-white">Emin misiniz?</h3>
+        <p id="confirmMessage" class="text-xs text-gray-400 mt-1"></p>
+      </div>
+    </div>
+    <div class="flex gap-2 justify-end">
+      <button onclick="closeModal('confirmModal')" class="btn-sec text-sm px-4 py-1.5">İptal</button>
+      <button id="confirmOkBtn" class="text-sm bg-red-600 hover:bg-red-500 text-white px-4 py-1.5 rounded-lg transition font-medium">Sil</button>
+    </div>
+  </div>
+</div>
 
 <!-- ===== MODAL: Restoran Ekle ===== -->
 <div id="restaurantModal" class="modal-overlay hidden">
@@ -334,6 +414,10 @@
       <div>
         <label class="lbl">Webhook URL <span class="text-gray-600 text-xs">(sipariş gelince POST atılır)</span></label>
         <input id="rWebhook" type="text" placeholder="https://pos.example.com/webhook" class="inp">
+      </div>
+      <div id="rCreditsRow">
+        <label class="lbl">Başlangıç Kontörü <span class="text-gray-600 text-xs">(her sipariş 1 kontör tüketir)</span></label>
+        <input id="rCredits" type="number" min="0" value="0" class="inp">
       </div>
       <div class="flex gap-3 pt-1">
         <button type="button" onclick="closeModal('restaurantModal')" class="btn-sec flex-1">İptal</button>
@@ -533,6 +617,79 @@
   .detail-tab.active { color:#818cf8; border-color:#6366f1; }
   .provider-card { background:#1f2937; border:1px solid #374151; border-radius:.75rem; padding:.875rem; display:flex; flex-direction:column; }
   .provider-card.disconnected { opacity:.6; }
+
+  /* ===== LIGHT MODE ===== */
+  html.light body { background-color:#f1f5f9; color:#0f172a; }
+
+  /* -- Backgrounds -- */
+  html.light .bg-gray-950  { background-color:#f1f5f9 !important; }
+  html.light .bg-gray-900  { background-color:#ffffff !important; }
+  html.light .bg-gray-800  { background-color:#f1f5f9 !important; }
+  html.light .bg-gray-700  { background-color:#e2e8f0 !important; }
+  html.light .bg-gray-600  { background-color:#cbd5e1 !important; }
+  html.light .bg-white     { background-color:#f8fafc !important; }
+  html.light .bg-gray-700\/50 { background-color:rgba(226,232,240,.5) !important; }
+  html.light .bg-gray-800\/60 { background-color:rgba(241,245,249,.6) !important; }
+
+  /* -- Text -- */
+  html.light .text-white   { color:#0f172a !important; }
+  html.light .text-gray-200 { color:#1e293b !important; }
+  html.light .text-gray-300 { color:#334155 !important; }
+  html.light .text-gray-400 { color:#64748b !important; }
+  html.light .text-gray-500 { color:#94a3b8 !important; }
+  html.light .text-gray-600 { color:#94a3b8 !important; }
+  /* Renkli arka planlı butonlarda beyaz metin korunur */
+  html.light .bg-indigo-600.text-white,
+  html.light .bg-indigo-500.text-white,
+  html.light .bg-red-500.text-white,
+  html.light .bg-red-600.text-white,
+  html.light .bg-green-500.text-white { color:#ffffff !important; }
+  /* hover:text-white → açık modda koyu kalır (ok, dark bg yok) */
+  html.light .hover\:text-white:hover { color:#0f172a !important; }
+
+  /* -- Borders -- */
+  html.light .border-gray-800    { border-color:#e2e8f0 !important; }
+  html.light .border-gray-700    { border-color:#cbd5e1 !important; }
+  html.light .border-gray-600    { border-color:#d1d5db !important; }
+  html.light .border-gray-800\/60 { border-color:rgba(226,232,240,.6) !important; }
+  html.light .divide-gray-800 > * + * { border-color:#e2e8f0 !important; }
+
+  /* -- Hover states -- */
+  html.light .hover\:bg-gray-800:hover     { background-color:#e2e8f0 !important; }
+  html.light .hover\:bg-gray-700:hover     { background-color:#cbd5e1 !important; }
+  html.light .hover\:bg-gray-800\/50:hover { background-color:rgba(226,232,240,.7) !important; }
+  html.light .hover\:bg-red-500\/10:hover  { background-color:rgba(239,68,68,.08) !important; }
+  html.light .hover\:bg-red-500\/20:hover  { background-color:rgba(239,68,68,.12) !important; }
+  html.light .hover\:bg-indigo-600\/40:hover { background-color:rgba(79,70,229,.15) !important; }
+
+  /* -- Custom classes -- */
+  html.light .nav-btn        { color:#475569; }
+  html.light .nav-btn:hover  { background:rgba(99,102,241,.08); color:#4338ca; }
+  html.light .nav-btn.active { background:rgba(99,102,241,.12); color:#4338ca; font-weight:600; }
+
+  html.light .modal-overlay { background:rgba(15,23,42,.55); }
+  html.light .modal-box     { background:#ffffff; border-color:#e2e8f0; }
+
+  html.light .inp            { background:#f8fafc; border-color:#cbd5e1; color:#0f172a; }
+  html.light .inp:focus      { border-color:#6366f1; }
+  html.light .inp::placeholder { color:#94a3b8; }
+  html.light select.inp option { background:#ffffff; color:#0f172a; }
+  html.light .lbl            { color:#64748b; }
+
+  html.light .btn-sec        { background:#e2e8f0; color:#334155; border-color:#cbd5e1; }
+  html.light .btn-sec:hover  { background:#cbd5e1; color:#1e293b; }
+
+  html.light .section-box    { background:#f8fafc; border-color:#e2e8f0; }
+  html.light .section-title  { color:#4338ca; }
+
+  html.light .detail-tab        { color:#64748b; border-color:transparent; }
+  html.light .detail-tab:hover  { color:#334155; background:rgba(99,102,241,.05); }
+  html.light .detail-tab.active { color:#4338ca; border-color:#6366f1; }
+
+  html.light .provider-card { background:#f8fafc; border-color:#e2e8f0; }
+
+  /* Filter/status butonları */
+  html.light .detail-order-btn { border-color:#cbd5e1 !important; color:#475569 !important; }
 </style>
 
 <script>
@@ -575,8 +732,25 @@ function confirmToast(message) {
   });
 }
 if (!token) window.location.href = '/panel/login';
-const business = JSON.parse(localStorage.getItem('business') || '{}');
+let business = JSON.parse(localStorage.getItem('business') || '{}');
 document.getElementById('businessName').textContent = business.name || '';
+
+// Taze business verisini API'den çek (is_super gibi yeni alanlar için)
+async function refreshBusiness() {
+  const data = await api('/api/auth/me');
+  if (data?.business) {
+    business = data.business;
+    localStorage.setItem('business', JSON.stringify(business));
+    document.getElementById('businessName').textContent = business.name || '';
+    const badge = document.getElementById('superBadge');
+    if (badge) badge.style.display = business.is_super ? '' : 'none';
+    // Aktif sayfa restoranlar ise yenile (is_super badge'leri için)
+    if (document.getElementById('page-restaurants')?.classList.contains('active')) {
+      loadRestaurants();
+    }
+  }
+}
+refreshBusiness();
 
 let allProviders = [];
 let activeRestaurantId = null;
@@ -617,6 +791,12 @@ function showPage(name) {
 
 function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+function openRestaurantModal() {
+  // is_super ise credits satırını gizle
+  document.getElementById('rCreditsRow').style.display = business.is_super ? 'none' : '';
+  document.getElementById('rCredits').value = 0;
+  openModal('restaurantModal');
+}
 function logout()       { localStorage.clear(); window.location.href='/panel/login'; }
 function toSlug(v) {
   return v.toLowerCase()
@@ -785,7 +965,13 @@ async function loadRestaurants() {
         <div onclick="openRestaurantDetail(${r.id})" class="p-4 cursor-pointer hover:bg-gray-800/50 transition">
           <div class="flex items-start justify-between mb-2">
             <h3 class="font-semibold text-sm">${r.name}</h3>
-            <span class="text-xs px-2 py-0.5 rounded-full ${r.status==='active'?'bg-green-500/10 text-green-400':'bg-gray-700 text-gray-400'}">${r.status==='active'?'Aktif':'Pasif'}</span>
+            <div class="flex items-center gap-1.5">
+              ${business.is_super
+                ? `<span title="Sınırsız kontör" class="text-xs px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400">⚡ ∞</span>`
+                : `<span title="Kontör" class="text-xs px-2 py-0.5 rounded-full ${r.credits>0?'bg-indigo-500/10 text-indigo-400':'bg-red-500/10 text-red-400'}">🪙 ${r.credits}</span>`
+              }
+              <span class="text-xs px-2 py-0.5 rounded-full ${r.status==='active'?'bg-green-500/10 text-green-400':'bg-gray-700 text-gray-400'}">${r.status==='active'?'Aktif':'Pasif'}</span>
+            </div>
           </div>
           <p class="text-xs font-mono text-gray-500 mb-2">${r.slug}</p>
           <div class="flex flex-wrap gap-3 text-xs text-gray-400">
@@ -838,6 +1024,15 @@ async function openRestaurantDetail(restaurantId) {
   const statusEl = document.getElementById('detailRestaurantStatus');
   statusEl.textContent = r.status==='active' ? 'Aktif' : 'Pasif';
   statusEl.className = `text-xs px-2 py-0.5 rounded-full ${r.status==='active'?'bg-green-500/10 text-green-400':'bg-gray-700 text-gray-400'}`;
+  // Kontör badge (sadece göster)
+  const detailCredits = document.getElementById('detailCredits');
+  if (business.is_super) {
+    detailCredits.textContent = '∞';
+    detailCredits.className = 'text-xs font-semibold text-yellow-400';
+  } else {
+    detailCredits.textContent = r.credits ?? 0;
+    detailCredits.className = `text-xs font-semibold ${(r.credits??0)>0?'text-indigo-400':'text-red-400'}`;
+  }
   document.getElementById('detailDeleteBtn').dataset.id = restaurantId;
 
   switchDetailTab('orders');
@@ -853,12 +1048,94 @@ async function deleteCurrentRestaurant() {
   showPage('restaurants');
 }
 
+// ============ KONTÖR (Detay Tab) ============
+async function loadDetailCredits(restaurantId) {
+  if (!restaurantId) return;
+
+  // Bakiye durumu
+  const statusEl = document.getElementById('detailCreditsStatus');
+  const addSection = document.getElementById('detailCreditsAddSection');
+  const data = await api(`/api/restaurants/${restaurantId}`);
+  const r = data?.data;
+  if (r) {
+    if (business.is_super) {
+      statusEl.innerHTML = `<div class="flex items-center gap-2 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+        <span class="text-lg">⚡</span>
+        <div><p class="text-sm font-semibold text-yellow-400">Sınırsız Kontör</p><p class="text-xs text-gray-400">Super hesap — limit yok</p></div>
+      </div>`;
+      addSection.style.display = 'none';
+    } else {
+      const c = r.credits ?? 0;
+      statusEl.innerHTML = `<div class="flex items-center gap-2 p-3 ${c>0?'bg-indigo-500/10 border-indigo-500/20':'bg-red-500/10 border-red-500/20'} border rounded-lg">
+        <span class="text-2xl">🪙</span>
+        <div><p class="text-2xl font-bold ${c>0?'text-indigo-400':'text-red-400'}">${c}</p><p class="text-xs text-gray-400">Kalan kontör</p></div>
+      </div>`;
+      addSection.style.display = '';
+    }
+  }
+
+  // Hareketler
+  await loadDetailTransactions(restaurantId);
+}
+
+async function addCreditsFromDetail() {
+  const id = document.getElementById('detailDeleteBtn').dataset.id;
+  const amount = parseInt(document.getElementById('detailCreditsInput').value);
+  if (!id || !amount || amount < 1) return;
+  const data = await api(`/api/restaurants/${id}/credits`, {
+    method: 'POST',
+    body: JSON.stringify({ amount })
+  });
+  if (data?.data) {
+    toast(`${amount} kontör eklendi`, 'success');
+    // Header badge güncelle
+    const badge = document.getElementById('detailCredits');
+    badge.textContent = data.data.credits;
+    badge.className = `text-xs font-semibold ${data.data.credits>0?'text-indigo-400':'text-red-400'}`;
+    loadDetailCredits(id);
+  }
+}
+
+const TX_ICONS = { add: '➕', use: '🪙', payment: '💳' };
+const TX_LABELS = { add: 'Ekleme', use: 'Kullanım', payment: 'Satın Alma' };
+const TX_COLORS = { add: 'text-green-400', use: 'text-red-400', payment: 'text-blue-400' };
+
+async function loadDetailTransactions(restaurantId) {
+  const listEl = document.getElementById('detailTxList');
+  listEl.innerHTML = '<p class="text-xs text-gray-500">Yükleniyor...</p>';
+
+  const data = await api(`/api/restaurants/${restaurantId}/credit-transactions`);
+  const txs = data?.data || [];
+
+  if (!txs.length) {
+    listEl.innerHTML = '<p class="text-xs text-gray-500">Henüz hareket yok.</p>';
+    return;
+  }
+
+  listEl.innerHTML = txs.map(tx => `
+    <div class="bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <span class="text-base shrink-0">${TX_ICONS[tx.type]||'🔹'}</span>
+        <div class="min-w-0">
+          <p class="text-xs text-white truncate">${tx.description || TX_LABELS[tx.type]}</p>
+          <p class="text-xs text-gray-500">${new Date(tx.created_at).toLocaleString('tr-TR')}</p>
+        </div>
+      </div>
+      <div class="text-right shrink-0">
+        <p class="text-sm font-bold ${TX_COLORS[tx.type]||'text-gray-400'}">${tx.amount > 0 ? '+' : ''}${tx.amount}</p>
+        <p class="text-xs text-gray-500">Bakiye: ${tx.balance}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
 function switchDetailTab(tab) {
-  ['orders','integrations'].forEach(t => {
+  ['orders','integrations','credits'].forEach(t => {
     document.getElementById('dtab-'+t).classList.toggle('active', t===tab);
     document.getElementById('dtab-'+t+'-content').classList.toggle('hidden', t!==tab);
   });
-  if (tab==='orders') loadDetailOrders(currentDetailOrderStatus);
+  if (tab==='orders')  loadDetailOrders(currentDetailOrderStatus);
+  if (tab==='credits') loadDetailCredits(document.getElementById('detailDeleteBtn').dataset.id);
 }
 
 function filterDetailOrders(s) {
@@ -958,6 +1235,27 @@ async function loadDetailIntegrations(restaurantId) {
         </div>`;
     }
   }).join('');
+
+  // Bağlı entegrasyonların gerçek açık/kapalı durumunu API'den çek
+  const connectedProviders = allProviders
+    .map(p => ({ p, rp: rpMap[p.id] }))
+    .filter(({ p, rp }) => rp && ['getir','trendyol','migros'].includes(p.slug));
+
+  connectedProviders.forEach(({ p, rp }) => {
+    fetchStoreStatus(p.slug, rp.id);
+  });
+}
+
+async function fetchStoreStatus(slug, integrationId) {
+  try {
+    const data = await api(`/api/${slug}/${integrationId}/info`);
+    if (data?.error || !data?.data) return;
+    const info = data.data;
+    // Getir: status=100 açık, 200=kapalı
+    const isOpen = slug === 'getir' ? info.status === 100 : !!info.status;
+    storeOpenState[integrationId] = isOpen;
+    updateSwitchUI(integrationId, isOpen);
+  } catch {}
 }
 
 // ============ PROVIDERS ============
@@ -1233,6 +1531,7 @@ document.getElementById('restaurantForm').addEventListener('submit', async (e) =
         address: document.getElementById('rAddress').value,
         webhook_url: document.getElementById('rWebhook').value,
         status: document.getElementById('rStatus').value,
+        credits: business.is_super ? 0 : parseInt(document.getElementById('rCredits').value) || 0,
       })
     });
     const data = await res.json();
@@ -1278,8 +1577,10 @@ function openGetirManage(integrationId, restaurantNameEncoded) {
   document.getElementById('page-getir-manage').classList.add('active');
   document.getElementById('nav-restaurants').classList.add('active');
 
+  allGetirPaymentMethods = []; // yeni entegrasyon için cache sıfırla
   loadGetirInfo();
   loadGetirWorkingHours();
+  loadGetirPaymentMethods();
 }
 
 function setGetirToggle(id, on) {
@@ -1300,12 +1601,12 @@ async function loadGetirInfo() {
   el.innerHTML = `
     <div class="flex justify-between"><span class="text-gray-500">Restoran ID</span><span class="font-mono text-gray-300">${info.id||'—'}</span></div>
     <div class="flex justify-between"><span class="text-gray-500">İsim</span><span class="text-gray-300">${info.name||'—'}</span></div>
-    <div class="flex justify-between"><span class="text-gray-500">Durum</span><span class="${info.status===1?'text-green-400':'text-orange-400'}">${info.status===1?'Açık':'Kapalı'} (${info.status})</span></div>
+    <div class="flex justify-between"><span class="text-gray-500">Durum</span><span class="${info.status===100?'text-green-400':'text-orange-400'}">${info.status===100?'Açık':'Kapalı'} (${info.status})</span></div>
     <div class="flex justify-between"><span class="text-gray-500">Ort. Hazırlama</span><span class="text-gray-300">${info.averagePreparationTime||0} dk</span></div>
     <div class="flex justify-between"><span class="text-gray-500">Kurye</span><span class="${info.isCourierAvailable?'text-green-400':'text-red-400'}">${info.isCourierAvailable?'Aktif':'Pasif'}</span></div>
   `;
   // Sync toggle to actual status
-  getirStatusIsOpen = info.status === 1;
+  getirStatusIsOpen = info.status === 100;
   setGetirToggle('getirStatusToggle', getirStatusIsOpen);
   document.getElementById('getirTimeOffRow').classList.toggle('hidden', getirStatusIsOpen);
   getirCourierIsOn = info.isCourierAvailable;
@@ -1401,6 +1702,106 @@ async function saveGetirWorkingHours() {
   if (data?.error) { toast(data.error, 'error'); return; }
   toast('Çalışma saatleri kaydedildi', 'success');
 }
+
+let allGetirPaymentMethods = [];
+
+// allGetirPaymentMethods'u sadece ilk açılışta veya manuel yenilede çek
+async function loadGetirPaymentMethods(forceAll = false) {
+  const el = document.getElementById('getirPaymentMethodsList');
+  el.innerHTML = '<p class="text-xs text-gray-600">Yükleniyor...</p>';
+
+  // Tüm yöntemleri sadece cache boşsa veya forceAll=true ise çek
+  if (forceAll || !allGetirPaymentMethods.length) {
+    const allData = await api(`/api/getir/${currentGetirIntegrationId}/all-payment-methods`);
+    allGetirPaymentMethods = allData?.data || [];
+  }
+
+  await refreshRestPaymentMethods();
+}
+
+async function refreshRestPaymentMethods() {
+  const el = document.getElementById('getirPaymentMethodsList');
+  const restData = await api(`/api/getir/${currentGetirIntegrationId}/payment-methods`);
+  const restMethods = restData?.data || [];
+  const restIds = new Set(restMethods.map(m => m.id));
+
+  // Dropdown güncelle
+  const sel = document.getElementById('getirPaymentMethodSelect');
+  sel.innerHTML = '<option value="">— Seçiniz —</option>' +
+    allGetirPaymentMethods
+      .filter(m => !restIds.has(m.id))
+      .map(m => `<option value="${m.id}">${m.name?.tr || m.name?.en || m.id}</option>`)
+      .join('');
+
+  if (restData?.error) { el.innerHTML = `<p class="text-xs text-red-400">${restData.error}</p>`; return; }
+  if (!restMethods.length) { el.innerHTML = '<p class="text-xs text-gray-500">Henüz ödeme yöntemi eklenmemiş</p>'; return; }
+  el.innerHTML = restMethods.map(m => {
+    const label = m.name?.tr || m.name?.en || m.id;
+    return `
+    <div class="flex items-center justify-between bg-gray-800/60 rounded-lg px-3 py-2">
+      <div>
+        <p class="text-xs font-medium text-white">${label}</p>
+        <p class="text-xs text-gray-500">${m.id}</p>
+      </div>
+      <button onclick="deleteGetirPaymentMethod('${m.id}')" class="text-xs text-red-400 hover:text-red-300 transition ml-3 shrink-0">Sil</button>
+    </div>`;
+  }).join('');
+}
+
+async function addGetirPaymentMethod() {
+  const sel = document.getElementById('getirPaymentMethodSelect');
+  const id = sel.value;
+  if (!id) return;
+  const data = await api(`/api/getir/${currentGetirIntegrationId}/payment-methods`, { method: 'POST', body: JSON.stringify({ paymentMethodId: id }) });
+  if (data?.error) { toast(data.error, 'error'); return; }
+  toast('Ödeme yöntemi eklendi', 'success');
+  await refreshRestPaymentMethods();
+}
+
+function deleteGetirPaymentMethod(id) {
+  const method = allGetirPaymentMethods.find(m => m.id === id);
+  const label = method?.name?.tr || method?.name?.en || id;
+  showConfirm(
+    'Ödeme yöntemi silinecek',
+    `"${label}" ödeme yöntemi restoranınızdan kaldırılacak.`,
+    async () => {
+      const data = await api(`/api/getir/${currentGetirIntegrationId}/payment-methods`, { method: 'DELETE', body: JSON.stringify({ paymentMethodId: id }) });
+      if (data?.error) { toast(data.error, 'error'); return; }
+      toast('Ödeme yöntemi silindi', 'success');
+      await refreshRestPaymentMethods();
+    }
+  );
+}
+
+function showConfirm(title, message, onConfirm) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMessage').textContent = message;
+  const btn = document.getElementById('confirmOkBtn');
+  const newBtn = btn.cloneNode(true); // eski listener'ı temizle
+  btn.replaceWith(newBtn);
+  newBtn.addEventListener('click', () => {
+    closeModal('confirmModal');
+    onConfirm();
+  });
+  openModal('confirmModal');
+}
+
+// ===== THEME =====
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light');
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  updateThemeBtn(isLight);
+}
+function updateThemeBtn(isLight) {
+  document.getElementById('themeIcon').textContent  = isLight ? '🌙' : '☀️';
+  document.getElementById('themeLabel').textContent = isLight ? 'Koyu Mod' : 'Açık Mod';
+}
+(function initTheme() {
+  if (localStorage.getItem('theme') === 'light') {
+    document.documentElement.classList.add('light');
+    updateThemeBtn(true);
+  }
+})();
 
 // Init
 showPage('dashboard');

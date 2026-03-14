@@ -28,7 +28,7 @@ func (h *OrderHandler) List(c *gin.Context) {
 
 	query := h.db.
 		Joins("JOIN restaurants ON restaurants.id = orders.restaurant_id").
-		Where("restaurants.business_id = ?", businessID).
+		Where("restaurants.business_id = ? AND orders.active = true", businessID).
 		Preload("Restaurant").
 		Preload("RestaurantProvider.Provider")
 
@@ -50,7 +50,7 @@ func (h *OrderHandler) ListByRestaurant(c *gin.Context) {
 
 	query := h.db.
 		Joins("JOIN restaurants ON restaurants.id = orders.restaurant_id").
-		Where("restaurants.business_id = ? AND orders.restaurant_id = ?", businessID, restaurantID).
+		Where("restaurants.business_id = ? AND orders.restaurant_id = ? AND orders.active = true", businessID, restaurantID).
 		Preload("Restaurant").
 		Preload("RestaurantProvider.Provider")
 
@@ -73,7 +73,7 @@ func (h *OrderHandler) Get(c *gin.Context) {
 	var order models.Order
 	err := h.db.
 		Joins("JOIN restaurants ON restaurants.id = orders.restaurant_id").
-		Where("orders.id = ? AND restaurants.business_id = ?", id, businessID).
+		Where("orders.id = ? AND restaurants.business_id = ? AND orders.active = true", id, businessID).
 		Preload("Restaurant").
 		Preload("RestaurantProvider.Provider").
 		First(&order).Error
@@ -130,7 +130,7 @@ func (h *OrderHandler) IncomingOrder(c *gin.Context) {
 		Joins("JOIN providers ON providers.id = restaurant_providers.provider_id").
 		Where("providers.slug = ? AND restaurants.slug = ? AND restaurant_providers.status = ?",
 			providerSlug, restaurantSlug, "active").
-		Preload("Restaurant").
+		Preload("Restaurant.Business").
 		Preload("Provider").
 		First(&rp).Error
 
@@ -145,14 +145,27 @@ func (h *OrderHandler) IncomingOrder(c *gin.Context) {
 		return
 	}
 
+	// Kontör kontrolü: is_super değilse ve kontör 0 ise sipariş pasif kaydedilir
+	active := true
+	newBalance := rp.Restaurant.Credits
+	if !rp.Restaurant.Business.IsSuper {
+		if rp.Restaurant.Credits <= 0 {
+			active = false
+		} else {
+			h.db.Model(&rp.Restaurant).UpdateColumn("credits", gorm.Expr("credits - 1"))
+			newBalance = rp.Restaurant.Credits - 1
+		}
+	}
+
 	order := models.Order{
 		RestaurantID:         rp.RestaurantID,
 		RestaurantProviderID: rp.ID,
 		Status:               models.OrderStatusPending,
 		RawPayload:           models.JSONMap(rawPayload),
+		Active:               active,
 	}
 
-	if rp.AutoApprove == "1" {
+	if active && rp.AutoApprove == "1" {
 		order.Status = models.OrderStatusApproved
 	}
 
@@ -161,7 +174,21 @@ func (h *OrderHandler) IncomingOrder(c *gin.Context) {
 		return
 	}
 
-	if rp.Restaurant.WebhookURL != "" {
+	// Kontör tüketim hareketi
+	if active && !rp.Restaurant.Business.IsSuper {
+		orderID := order.ID
+		h.db.Create(&models.CreditTransaction{
+			RestaurantID: rp.RestaurantID,
+			Amount:       -1,
+			Balance:      newBalance,
+			Type:         models.CreditTxUse,
+			Source:       models.CreditSrcOrder,
+			Description:  "Sipariş #" + strconv.Itoa(int(order.ID)),
+			OrderID:      &orderID,
+		})
+	}
+
+	if active && rp.Restaurant.WebhookURL != "" {
 		go h.webhook.SendOrder(&order, rp.Restaurant.WebhookURL)
 	}
 

@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
+
 type RestaurantHandler struct {
 	db *gorm.DB
 }
@@ -25,6 +26,7 @@ type CreateRestaurantRequest struct {
 	Phone      string `json:"phone"`
 	Address    string `json:"address"`
 	WebhookURL string `json:"webhook_url"`
+	Credits    int    `json:"credits"`
 }
 
 type UpdateRestaurantRequest struct {
@@ -88,11 +90,25 @@ func (h *RestaurantHandler) Create(c *gin.Context) {
 		Address:    req.Address,
 		WebhookURL: req.WebhookURL,
 		Status:     "active",
+		Credits:    req.Credits,
 	}
 
 	if err := h.db.Create(&restaurant).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create restaurant"})
 		return
+	}
+
+	// Başlangıç kontörü varsa hareket kaydı
+	if restaurant.Credits > 0 {
+		tx := models.CreditTransaction{
+			RestaurantID: restaurant.ID,
+			Amount:       restaurant.Credits,
+			Balance:      restaurant.Credits,
+			Type:         models.CreditTxAdd,
+			Source:       models.CreditSrcManual,
+			Description:  "Başlangıç kontörü",
+		}
+		h.db.Create(&tx)
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"data": restaurant})
@@ -134,6 +150,65 @@ func (h *RestaurantHandler) Update(c *gin.Context) {
 
 	h.db.Save(&restaurant)
 	c.JSON(http.StatusOK, gin.H{"data": restaurant})
+}
+
+// AddCredits godoc
+// POST /restaurants/:id/credits
+func (h *RestaurantHandler) AddCredits(c *gin.Context) {
+	businessID := middleware.GetBusinessID(c)
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	var restaurant models.Restaurant
+	if err := h.db.Where("id = ? AND business_id = ?", id, businessID).First(&restaurant).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Restaurant not found"})
+		return
+	}
+
+	var req struct {
+		Amount int `json:"amount" binding:"required,min=1"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	h.db.Model(&restaurant).UpdateColumn("credits", gorm.Expr("credits + ?", req.Amount))
+	h.db.First(&restaurant, id)
+
+	// Hareket kaydı
+	tx := models.CreditTransaction{
+		RestaurantID: restaurant.ID,
+		Amount:       req.Amount,
+		Balance:      restaurant.Credits,
+		Type:         models.CreditTxAdd,
+		Source:       models.CreditSrcManual,
+		Description:  "Manuel kontör ekleme",
+	}
+	h.db.Create(&tx)
+
+	c.JSON(http.StatusOK, gin.H{"data": restaurant})
+}
+
+// ListCreditTransactions godoc
+// GET /restaurants/:id/credit-transactions
+func (h *RestaurantHandler) ListCreditTransactions(c *gin.Context) {
+	businessID := middleware.GetBusinessID(c)
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	// Restoranın bu business'a ait olduğunu doğrula
+	var restaurant models.Restaurant
+	if err := h.db.Where("id = ? AND business_id = ?", id, businessID).First(&restaurant).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Restaurant not found"})
+		return
+	}
+
+	var txs []models.CreditTransaction
+	h.db.Where("restaurant_id = ?", id).
+		Order("created_at DESC").
+		Limit(100).
+		Find(&txs)
+
+	c.JSON(http.StatusOK, gin.H{"data": txs, "restaurant": restaurant})
 }
 
 // Delete godoc

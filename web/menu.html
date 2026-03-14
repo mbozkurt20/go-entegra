@@ -300,23 +300,23 @@ function renderProducts(products) {
             ${p.category ? `<p class="text-xs text-gray-500 mt-0.5">${p.category.name}</p>` : ''}
             ${p.description ? `<p class="text-xs text-gray-400 mt-1 line-clamp-2">${p.description}</p>` : ''}
           </div>
-          <!-- Aktif/Pasif toggle -->
-          <button onclick="toggleProduct('${p.id}', ${p.isAvailable})"
-            class="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition
-              ${p.isAvailable ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20' : 'bg-gray-700 text-gray-400 hover:bg-gray-600'}"
+          <!-- Aktif/Pasif switch -->
+          <button onclick="toggleProduct('${p.id}', ${p.isAvailable})" id="sw-${p.id}"
+            role="switch" aria-checked="${p.isAvailable}"
+            class="shrink-0 relative inline-flex h-5 w-9 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${p.isAvailable ? 'bg-green-500' : 'bg-gray-600'}"
             title="${p.isAvailable ? 'Pasife al' : 'Aktife al'}">
-            ${p.isAvailable ? '✓' : '✕'}
+            <span class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform duration-200 ${p.isAvailable ? 'translate-x-4' : 'translate-x-0'}"></span>
           </button>
         </div>
         <div class="flex items-center justify-between mt-3 pt-2 border-t border-gray-800">
           <div>
             <p class="text-sm font-bold text-white">₺${p.price.toFixed(2)}</p>
-            <p class="text-xs ${p.isAvailable ? 'text-green-400' : 'text-gray-500'}">${p.isAvailable ? 'Satışta' : 'Pasif'}</p>
+            <p class="status-txt text-xs ${p.isAvailable ? 'text-green-400' : 'text-gray-500'}">${p.isAvailable ? 'Satışta' : 'Pasif'}</p>
           </div>
-          <button onclick="openPriceModal('${p.id}', '${p.name.replace(/'/g,"\\'")}', ${p.price})"
+          ${provider !== 'getir' ? `<button onclick="openPriceModal('${p.id}', '${p.name.replace(/'/g,"\\'")}', ${p.price})"
             class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded-lg transition">
             Fiyat Düzenle
-          </button>
+          </button>` : ''}
         </div>
       </div>
     </div>
@@ -339,12 +339,27 @@ async function toggleProduct(productId, currentState) {
   if (data?.error) {
     showError(data.error);
   } else {
-    // Listeyi güncelle
     allProducts = allProducts.map(p => p.id === productId ? {...p, isAvailable: newState} : p);
+    // Switch görünümünü güncelle
+    const sw = document.getElementById('sw-' + productId);
+    if (sw) {
+      sw.setAttribute('aria-checked', newState);
+      sw.className = sw.className.replace(newState ? 'bg-gray-600' : 'bg-green-500', newState ? 'bg-green-500' : 'bg-gray-600');
+      sw.querySelector('span').className = sw.querySelector('span').className.replace(
+        newState ? 'translate-x-0' : 'translate-x-4',
+        newState ? 'translate-x-4' : 'translate-x-0'
+      );
+      sw.title = newState ? 'Pasife al' : 'Aktife al';
+    }
+    // Fiyat altındaki durum metnini güncelle
     const card = document.getElementById('pc-' + productId);
     if (card) {
-      // Sayfayı yeniden yükle
-      renderProducts(allProducts);
+      const statusTxt = card.querySelector('.status-txt');
+      if (statusTxt) {
+        statusTxt.textContent = newState ? 'Satışta' : 'Pasif';
+        statusTxt.className = `status-txt text-xs ${newState ? 'text-green-400' : 'text-gray-500'}`;
+      }
+      card.classList.toggle('product-unavailable', !newState);
     }
   }
 }

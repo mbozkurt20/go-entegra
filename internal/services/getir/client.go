@@ -447,7 +447,7 @@ func (c *Client) GetChainOptionCategories() ([]ChainOptionCategory, error) {
 }
 
 // UpdateChainMenuPrices zincir menüdeki ürün ve opsiyon fiyatlarını günceller
-func (c *Client) UpdateChainMenuPrices(chainMenuOID string, products []ChainPriceItem, options []ChainPriceItem) error {
+func (c *Client) UpdateChainMenuPrices(chainMenuOID string, products []ChainProductPriceItem, options []ChainOptionPriceItem) error {
 	body := UpdateChainPricesRequest{
 		ChainProducts: products,
 		ChainOptions:  options,
@@ -458,6 +458,101 @@ func (c *Client) UpdateChainMenuPrices(chainMenuOID string, products []ChainPric
 	}
 	defer resp.Body.Close()
 	return checkResp(resp, "chain fiyat güncelleme")
+}
+
+// UpdateProductPrice ürün fiyatını günceller (chain menü gerektirir)
+func (c *Client) UpdateProductPrice(productID string, price float64) error {
+	menus, err := c.GetChainMenus()
+	if err != nil {
+		return fmt.Errorf("Getir fiyat güncelleme bu restoran için desteklenmiyor (zincir menü gerektirir)")
+	}
+	for _, m := range menus {
+		detail, err := c.GetChainMenu(m.ID)
+		if err != nil {
+			continue
+		}
+		for _, p := range detail.Products {
+			if p.ID == productID {
+				return c.UpdateChainMenuPrices(m.ID, []ChainProductPriceItem{{ChainProductOID: productID, Price: price}}, nil)
+			}
+		}
+	}
+	return fmt.Errorf("ürün zincir menüde bulunamadı: %s", productID)
+}
+
+// --- Ödeme Yöntemleri ---
+
+// GetAllPaymentMethods Getir'deki tüm ödeme yöntemlerini getirir (GET /payment-methods)
+func (c *Client) GetAllPaymentMethods() ([]PaymentMethod, error) {
+	resp, err := c.do("GET", "/payment-methods", nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if err := checkResp(resp, "tüm ödeme yöntemleri"); err != nil {
+		return nil, err
+	}
+	var result []PaymentMethod
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("tüm ödeme yöntemleri decode hatası: %w", err)
+	}
+	return result, nil
+}
+
+// GetPaymentMethods restoranın ödeme yöntemlerini getirir
+func (c *Client) GetPaymentMethods() ([]PaymentMethod, error) {
+	resp, err := c.do("GET", "/restaurants/payment-methods", nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if err := checkResp(resp, "ödeme yöntemleri"); err != nil {
+		return nil, err
+	}
+	var result []PaymentMethod
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("ödeme yöntemleri decode hatası: %w", err)
+	}
+	return result, nil
+}
+
+// AddPaymentMethod restorana ödeme yöntemi ekler
+func (c *Client) AddPaymentMethod(paymentMethodID string) error {
+	resp, err := c.do("POST", "/restaurants/payment-methods", PaymentMethodRequest{PaymentMethodID: paymentMethodID})
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return checkResp(resp, "ödeme yöntemi ekleme")
+}
+
+// DeletePaymentMethod restorandan ödeme yöntemi siler
+func (c *Client) DeletePaymentMethod(paymentMethodID string) error {
+	resp, err := c.do("DELETE", "/restaurants/payment-methods", PaymentMethodRequest{PaymentMethodID: paymentMethodID})
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return checkResp(resp, "ödeme yöntemi silme")
+}
+
+// --- Opsiyon Ürünler ---
+
+// GetOptionProducts restoranın opsiyon ürünlerini getirir
+func (c *Client) GetOptionProducts() ([]OptionProduct, error) {
+	resp, err := c.do("GET", "/restaurants/option-products", nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if err := checkResp(resp, "opsiyon ürünler"); err != nil {
+		return nil, err
+	}
+	var result []OptionProduct
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("opsiyon ürünler decode hatası: %w", err)
+	}
+	return result, nil
 }
 
 // NewClientFromInfo RestaurantProvider.Information map'inden client oluşturur

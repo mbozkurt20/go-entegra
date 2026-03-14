@@ -1,0 +1,19 @@
+[Unit]
+Description=Go Entegra API
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=mbozkurt
+WorkingDirectory=/home/mbozkurt/www/me/go-entegra
+ExecStart=/home/mbozkurt/www/me/go-entegra/bin/go-entegra
+EnvironmentFile=/home/mbozkurt/www/me/go-entegra/.env
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=go-entegra
+
+[Install]
+WantedBy=multi-user.target

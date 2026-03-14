@@ -259,8 +259,8 @@ func (h *GetirMenuHandler) UpdateChainMenuPrices(c *gin.Context) {
 	chainMenuID := c.Param("chain_menu_id")
 
 	var req struct {
-		ChainProducts []getirSvc.ChainPriceItem `json:"chain_products"`
-		ChainOptions  []getirSvc.ChainPriceItem `json:"chain_options"`
+		ChainProducts []getirSvc.ChainProductPriceItem `json:"chain_products"`
+		ChainOptions  []getirSvc.ChainOptionPriceItem  `json:"chain_options"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -278,6 +278,37 @@ func (h *GetirMenuHandler) UpdateChainMenuPrices(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Fiyatlar güncellendi"})
+}
+
+// UpdateProductPrice ürün fiyatını chain menüde bulup günceller
+// PUT /api/getir/:integration_id/products/:product_id/price
+// Body: {"price": 99.9}
+func (h *GetirMenuHandler) UpdateProductPrice(c *gin.Context) {
+	rp, ok := h.getIntegration(c)
+	if !ok {
+		return
+	}
+	client, ok := h.newClient(c, rp)
+	if !ok {
+		return
+	}
+
+	productID := c.Param("product_id")
+
+	var req struct {
+		Price float64 `json:"price" binding:"required,gt=0"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçerli bir fiyat girin"})
+		return
+	}
+
+	if err := client.UpdateProductPrice(productID, req.Price); err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Fiyat güncellendi"})
 }
 
 // SetStatus restoran Getir'de açar/kapatır
@@ -403,6 +434,120 @@ func (h *GetirMenuHandler) GetWorkingHours(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": hours})
+}
+
+// GetOptionProducts restoran opsiyon ürünlerini getirir
+// GET /api/getir/:integration_id/option-products
+func (h *GetirMenuHandler) GetOptionProducts(c *gin.Context) {
+	rp, ok := h.getIntegration(c)
+	if !ok {
+		return
+	}
+	client, ok := h.newClient(c, rp)
+	if !ok {
+		return
+	}
+
+	products, err := client.GetOptionProducts()
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": products})
+}
+
+// GetAllPaymentMethods Getir'deki tüm ödeme yöntemlerini getirir
+// GET /api/getir/:integration_id/all-payment-methods
+func (h *GetirMenuHandler) GetAllPaymentMethods(c *gin.Context) {
+	rp, ok := h.getIntegration(c)
+	if !ok {
+		return
+	}
+	client, ok := h.newClient(c, rp)
+	if !ok {
+		return
+	}
+
+	methods, err := client.GetAllPaymentMethods()
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": methods})
+}
+
+// GetPaymentMethods restoran ödeme yöntemlerini getirir
+// GET /api/getir/:integration_id/payment-methods
+func (h *GetirMenuHandler) GetPaymentMethods(c *gin.Context) {
+	rp, ok := h.getIntegration(c)
+	if !ok {
+		return
+	}
+	client, ok := h.newClient(c, rp)
+	if !ok {
+		return
+	}
+
+	methods, err := client.GetPaymentMethods()
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": methods})
+}
+
+// AddPaymentMethod restorana ödeme yöntemi ekler
+// POST /api/getir/:integration_id/payment-methods
+func (h *GetirMenuHandler) AddPaymentMethod(c *gin.Context) {
+	rp, ok := h.getIntegration(c)
+	if !ok {
+		return
+	}
+	client, ok := h.newClient(c, rp)
+	if !ok {
+		return
+	}
+
+	var req struct {
+		PaymentMethodID string `json:"paymentMethodId" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "paymentMethodId alanı gereklidir"})
+		return
+	}
+
+	if err := client.AddPaymentMethod(req.PaymentMethodID); err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Ödeme yöntemi eklendi"})
+}
+
+// DeletePaymentMethod restorandan ödeme yöntemi siler
+// DELETE /api/getir/:integration_id/payment-methods
+func (h *GetirMenuHandler) DeletePaymentMethod(c *gin.Context) {
+	rp, ok := h.getIntegration(c)
+	if !ok {
+		return
+	}
+	client, ok := h.newClient(c, rp)
+	if !ok {
+		return
+	}
+
+	var req struct {
+		PaymentMethodID string `json:"paymentMethodId" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "paymentMethodId alanı gereklidir"})
+		return
+	}
+
+	if err := client.DeletePaymentMethod(req.PaymentMethodID); err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Ödeme yöntemi silindi"})
 }
 
 // SetWorkingHours çalışma saatlerini günceller

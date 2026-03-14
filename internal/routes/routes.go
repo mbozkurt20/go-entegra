@@ -22,7 +22,9 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtExpireHours int) {
 	getirHandler        := handlers.NewGetirHandler(db, webhookSvc)
 	getirMenuHandler    := handlers.NewGetirMenuHandler(db)
 	trendyolMenuHandler := handlers.NewTrendyolMenuHandler(db)
+	trendyolHandler    := handlers.NewTrendyolHandler(db)
 	migrosHandler        := handlers.NewMigrosHandler(db)
+	ysHandler            := handlers.NewYemeksepetiHandler(db, webhookSvc)
 
 	// Panel (frontend HTML)
 	panel := r.Group("/panel")
@@ -42,9 +44,11 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtExpireHours int) {
 		auth.POST("/login",    authHandler.Login)
 	}
 
-	// Public: Getir webhook'ları (yeni sipariş + statü değişikliği)
+	// Public: Getir webhook'ları
 	r.POST("/webhook/getir/:restaurant_slug",        getirHandler.IncomingOrder)
 	r.POST("/webhook/getir/:restaurant_slug/status", getirHandler.IncomingStatusChange)
+	// Public: YemekSepeti (DH) webhook — posVendorId ile
+	r.POST("/webhook/yemeksepeti/:pos_vendor_id", ysHandler.IncomingOrder)
 	// Public: Diğer pazaryeri webhook'ları
 	r.POST("/webhook/:provider_slug/:restaurant_slug", orderHandler.IncomingOrder)
 
@@ -63,6 +67,8 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtExpireHours int) {
 			restaurants.GET("/:id",  restaurantHandler.Get)
 			restaurants.PUT("/:id",  restaurantHandler.Update)
 			restaurants.DELETE("/:id", restaurantHandler.Delete)
+			restaurants.POST("/:id/credits", restaurantHandler.AddCredits)
+			restaurants.GET("/:id/credit-transactions", restaurantHandler.ListCreditTransactions)
 
 			// Entegrasyonlar
 			restaurants.GET("/:id/providers",         rpHandler.List)
@@ -81,6 +87,10 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtExpireHours int) {
 			orders.GET("",               orderHandler.List)
 			orders.GET("/:id",           orderHandler.Get)
 			orders.PATCH("/:id/status",  orderHandler.UpdateStatus)
+			orders.POST("/:id/trendyol/approve",          trendyolHandler.ApproveOrder)
+			orders.POST("/:id/trendyol/prepare",          trendyolHandler.PrepareOrder)
+			orders.POST("/:id/trendyol/deliver",          trendyolHandler.DeliverOrder)
+			orders.POST("/:id/trendyol/cancel",           trendyolHandler.CancelOrder)
 			orders.POST("/:id/getir/approve",           getirHandler.ApproveOrder)
 			orders.POST("/:id/getir/approve-scheduled", getirHandler.ApproveScheduledOrder)
 			orders.POST("/:id/getir/prepare",           getirHandler.PrepareOrder)
@@ -104,11 +114,17 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtExpireHours int) {
 			getir.GET("/menu",                             getirMenuHandler.GetMenu)
 			getir.GET("/categories",                       getirMenuHandler.GetCategories)
 			getir.PUT("/products/:product_id/status",              getirMenuHandler.UpdateProductStatus)
+			getir.PUT("/products/:product_id/price",               getirMenuHandler.UpdateProductPrice)
 			getir.PUT("/options/:option_id/status",                getirMenuHandler.UpdateOptionStatus)
 			getir.GET("/chain-menus",                              getirMenuHandler.GetChainMenus)
 			getir.GET("/chain-menus/:chain_menu_id",               getirMenuHandler.GetChainMenu)
 			getir.GET("/chain-option-categories",                  getirMenuHandler.GetChainOptionCategories)
 			getir.POST("/chain-menus/:chain_menu_id/update-prices", getirMenuHandler.UpdateChainMenuPrices)
+			getir.GET("/option-products",    getirMenuHandler.GetOptionProducts)
+			getir.GET("/all-payment-methods", getirMenuHandler.GetAllPaymentMethods)
+			getir.GET("/payment-methods",    getirMenuHandler.GetPaymentMethods)
+			getir.POST("/payment-methods",   getirMenuHandler.AddPaymentMethod)
+			getir.DELETE("/payment-methods", getirMenuHandler.DeletePaymentMethod)
 		}
 
 		// Trendyol — menü ve restoran yönetimi (integration_id = restaurant_provider.id)
@@ -127,6 +143,17 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtExpireHours int) {
 			migros.GET("/menu",                          migrosHandler.GetMenu)
 			migros.PUT("/products/:product_id/status",   migrosHandler.UpdateProductStatus)
 			migros.PUT("/products/:product_id/price",    migrosHandler.UpdateProductPrice)
+		}
+
+		// YemekSepeti (DH) — restoran yönetimi (integration_id = restaurant_provider.id)
+		ys := api.Group("/yemeksepeti/:integration_id")
+		{
+			ys.GET("/status",  ysHandler.GetStatus)
+			ys.PUT("/status",  ysHandler.SetStatus)
+			ys.POST("/orders/:order_token/accept",   ysHandler.AcceptOrder)
+			ys.POST("/orders/:order_token/reject",   ysHandler.RejectOrder)
+			ys.POST("/orders/:order_token/pickup",   ysHandler.PickupOrder)
+			ys.POST("/orders/:order_token/prepared", ysHandler.PreparationCompleted)
 		}
 	}
 }
